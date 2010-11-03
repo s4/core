@@ -1,0 +1,13 @@
+<config>
+  <list name="process.list">
+    <item>s4_sender_process</item>
+  </list>
+  <hash name="s4_sender_process.config">
+    <item name="num.process">1</item>
+    <item name="app.name">s4</item>
+    <item name="task.type">sender</item>
+    <item name="mode">unicast</item>
+    <item name="process.host">localhost</item>
+    <item name="ID">SEND_PROCESS_1</item>
+  </hash>
+</config>

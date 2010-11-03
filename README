@@ -1,0 +1,7 @@
+Kryo, Reflectasm, and minlog must be installed to your local Maven repository manually.
+The jars are present in lib/ within this project. To install, run the following commands:
+
+mvn install:install-file -DgroupId=com.esotericsoftware -DartifactId=kryo -Dversion=1.01 -Dpackaging=jar -Dfile=<path to kryo-1.01.jar>
+mvn install:install-file -DgroupId=com.esotericsoftware -DartifactId=reflectasm -Dversion=0.8 -Dpackaging=jar -Dfile=<path to reflectasm-0.8.jar>
+mvn install:install-file -DgroupId=com.esotericsoftware -DartifactId=minlog -Dversion=1.2 -Dpackaging=jar -Dfile=<path to minlog-1.2.jar>
+

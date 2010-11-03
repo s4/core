@@ -1,0 +1,10 @@
+# Eclipse meta-information
+/.project
+/.classpath
+/.settings
+
+# Build directory
+/target/*
+
+# SVN
+.svn
