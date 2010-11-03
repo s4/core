@@ -22,10 +22,10 @@ if [ "$1" == "-h" ]; then
   echo "  -h help" >&2
   exit 1
 fi
-BASE_DIR=`dirname $(readlink -f $0)`
-CORE_HOME=`readlink -f ${BASE_DIR}/../s4_core`
-APPS_HOME=`readlink -f ${BASE_DIR}/../s4_apps`
-EXTS_HOME=`readlink -f ${BASE_DIR}/../s4_exts`
+BASE_DIR=`dirname $(stat -f $0)`
+CORE_HOME=`stat -f ${BASE_DIR}/../s4_core`
+APPS_HOME=`stat -f ${BASE_DIR}/../s4_apps`
+EXTS_HOME=`stat -f ${BASE_DIR}/../s4_exts`
 
 while getopts ":c:a:i:z:l:g:e:" opt;
 do  case "$opt" in
@@ -71,7 +71,7 @@ if [ "x$LOCK_DIR" == "x" ] ; then
     LOCK_DIR="${CORE_HOME}/lock"
 fi
 
-TMP1=`mktemp -d`
+TMP1=`mktemp -d tmpXXXXX`
 echo "Temp is $TMP1"
 cat $CONF_LOC/s4_core.properties_header > $TMP1/s4_core.properties
 
