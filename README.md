@@ -3,7 +3,7 @@ S4 Core Classes
 
 Introduction
 ------------
-This is a component of the S4 streaming system. For more information, see http://s4.io
+This is a component of the S4 streaming system. For more information, see [s4.io](http://s4.io)
 
 Requirements
 ------------
