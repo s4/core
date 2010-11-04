@@ -89,6 +89,7 @@ if $osx ; then
 fi
 
 TMP1=`mktemp -d $MKTEMP_ARGS`
+echo "Temp is $TMP1"
 
 cat $CONF_LOC/s4_core.properties_header > $TMP1/s4_core.properties
 
