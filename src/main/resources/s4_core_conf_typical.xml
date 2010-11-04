@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans              http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
+  <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    <property name="location">
+      <value>classpath:s4_core.properties</value>
+    </property>
+    <property name="ignoreUnresolvablePlaceholders" value="true"/>
+  </bean> 
+  
+  <bean id="hasher" class="io.s4.dispatcher.partitioner.DefaultHasher"/>
+  
+  <bean id="commLayerEmitter" class="io.s4.emitter.CommLayerEmitter" init-method="init">
+    <property name="serDeser" ref="serDeser"/>
+    <property name="listener" ref="rawListener"/>
+    <property name="monitor" ref="monitor"/>
+  </bean>
+
+  <bean id="serDeser" class="io.s4.serialize.KryoSerDeser"/>
+
+  <bean id="peContainer" class="io.s4.processor.PEContainer" init-method="init" lazy-init="true">
+    <property name="maxQueueSize" value="${pe_container_max_queue_size}"/>
+    <property name="monitor" ref="monitor"/>
+    <property name="trackByKey" value="true"/>
+  </bean>
+
+  <bean id="rawListener" class="io.s4.listener.CommLayerListener" init-method="init">
+    <property name="serDeser" ref="serDeser"/>
+    <property name="clusterManagerAddress" value="${zk_address}"/>
+    <property name="appName" value="${s4_app_name}"/>
+    <property name="maxQueueSize" value="${listener_max_queue_size}"/>
+    <property name="monitor" ref="monitor"/>
+  </bean>
+
+  <bean id="eventListener" class="io.s4.collector.EventListener" init-method="init">
+    <property name="rawListener" ref="rawListener"/>
+    <property name="peContainer" ref="peContainer"/>
+    <property name="monitor" ref="monitor"/>
+  </bean>
+
+  <bean id="monitor" class="io.s4.logger.Log4jMonitor" lazy-init="true" init-method="init">
+    <property name="flushInterval" value="30"/>
+    <property name="loggerName" value="monitor"/>
+  </bean>
+
+  <bean id="watcher" class="io.s4.util.Watcher" init-method="init" lazy-init="true">
+    <property name="monitor" ref="monitor"/>
+    <property name="peContainer" ref="peContainer"/>
+    <property name="minimumMemory" value="52428800"/>
+  </bean>
+</beans>

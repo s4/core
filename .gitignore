@@ -1,0 +1,11 @@
+# Eclipse meta-information
+/.project
+/.classpath
+/.settings
+
+# Build directory
+/target/*
+!/target/site/apidocs/
+
+# SVN
+.svn

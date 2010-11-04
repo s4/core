@@ -1,0 +1,8 @@
+gc_opts=-server -XX:+HeapDumpOnOutOfMemoryError -XX:+UseConcMarkSweepGC -XX:-UseGCOverheadLimit
+mem_opts=-Xms800m -Xmx2000m
+remote_debug_enabled=no
+pe_container_max_queue_size=8000
+listener_max_queue_size=8000
+commlayer_mode=static
+zk_session_timeout=5000
+deamon_mode_enabled=false
