@@ -115,7 +115,6 @@
   </dependencies>
   <build>
     <finalName>${artifactId}-${version}</finalName>
-    <directory>target/${artifactId}-${version}.dir</directory>
     <resources>
       <resource>
         <directory>src/main/resources</directory>
