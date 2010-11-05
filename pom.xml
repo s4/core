@@ -4,7 +4,7 @@
   <groupId>io.s4</groupId>
   <artifactId>s4_core</artifactId>
   <packaging>jar</packaging>
-  <version>2.0.0.0</version>
+  <version>0.2.0.0</version>
   <name>s4_core</name>
   <url>http://maven.apache.org</url>
   <dependencies>
@@ -84,7 +84,7 @@
     <dependency>
       <groupId>io.s4.comm</groupId>
       <artifactId>comm</artifactId>
-      <version>2.0.0.0</version>
+      <version>0.2.0.0</version>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
