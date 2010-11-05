@@ -1,3 +1,4 @@
+#!/bin/bash
 
 if [ "x$1" == "x" ]; then
     echo "No target image directory specified"
