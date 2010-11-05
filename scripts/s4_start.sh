@@ -6,6 +6,17 @@ get_property()
   echo "$val"
 }
 
+osx=false
+case "`uname`" in
+Darwin*) osx=true;;
+esac
+
+if $osx; then
+    READLINK="stat"    
+else
+    READLINK="readlink"
+fi
+
 #---------------------------------------------
 # USAGE and read arguments
 #---------------------------------------------
@@ -22,10 +33,10 @@ if [ "$1" == "-h" ]; then
   echo "  -h help" >&2
   exit 1
 fi
-BASE_DIR=`dirname $(readlink -f $0)`
-CORE_HOME=`readlink -f ${BASE_DIR}/../s4_core`
-APPS_HOME=`readlink -f ${BASE_DIR}/../s4_apps`
-EXTS_HOME=`readlink -f ${BASE_DIR}/../s4_exts`
+BASE_DIR=`dirname $($READLINK -f $0)`
+CORE_HOME=`$READLINK -f ${BASE_DIR}/../s4_core`
+APPS_HOME=`$READLINK -f ${BASE_DIR}/../s4_apps`
+EXTS_HOME=`$READLINK -f ${BASE_DIR}/../s4_exts`
 
 while getopts ":c:a:i:z:l:g:e:" opt;
 do  case "$opt" in
@@ -71,8 +82,15 @@ if [ "x$LOCK_DIR" == "x" ] ; then
     LOCK_DIR="${CORE_HOME}/lock"
 fi
 
-TMP1=`mktemp -d`
+MKTEMP_ARGS=""
+
+if $osx ; then
+    MKTEMP_ARGS="tmpXXXX" 
+fi
+
+TMP1=`mktemp -d $MKTEMP_ARGS`
 echo "Temp is $TMP1"
+
 cat $CONF_LOC/s4_core.properties_header > $TMP1/s4_core.properties
 
 echo "zk_address=${CLUSTER_MANAGER}" >> $TMP1/s4_core.properties

@@ -1,5 +1,16 @@
 #/bin/bash
 
+osx=false
+case "`uname`" in
+Darwin*) osx=true;;
+esac
+
+if $osx; then
+    READLINK="stat"    
+else
+    READLINK="readlink"
+fi
+
 #---------------------------------------------
 # USAGE and read arguments
 #---------------------------------------------
@@ -17,9 +28,9 @@ if [ "$1" == "-h" ]; then
   exit 1
 fi
 
-BASE_DIR=`dirname $(readlink -f $0)`
-CORE_HOME=`readlink -f ${BASE_DIR}/../s4_core`
-APPS_HOME=`readlink -f ${BASE_DIR}/../s4_apps`
+BASE_DIR=`dirname $($READLINK -f $0)`
+CORE_HOME=`$READLINK -f ${BASE_DIR}/../s4_core`
+APPS_HOME=`$READLINK -f ${BASE_DIR}/../s4_apps`
 CP_SEP=":"
 REDBUTTON_MODE="false"
 
@@ -112,7 +123,13 @@ if [ "x$USER_CLASS_PATH" != "x" ] ; then
     CLASSPATH=${CLASSPATH}${CP_SEP}${USER_CLASS_PATH}
 fi
 
-TMP1=`mktemp -d`
+MKTEMP_ARGS=""
+
+if $osx ; then
+    MKTEMP_ARGS="tmpXXXX" 
+fi
+
+TMP1=`mktemp -d $MKTEMP_ARGS`
 echo "Temp is $TMP1"
 echo "appName=${SENDER_CLUSTER_NAME}" > $TMP1/adapter.properties
 echo "listenerAppName=${LISTENER_CLUSTER_NAME}" >> $TMP1/adapter.properties
