@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <assembly>
-  <id />
+  <id/>
   <formats>
     <format>dir</format>
   </formats>
@@ -8,47 +8,101 @@
   <dependencySets>
     <dependencySet>
       <unpack>false</unpack>
-      <outputDirectory>lib</outputDirectory>
+      <outputDirectory>s4_core/lib</outputDirectory>
       <scope>runtime</scope>
       <useProjectArtifact>false</useProjectArtifact>
     </dependencySet>
   </dependencySets> 
+  <files>
+    <file>
+      <source>${project.basedir}/src/main/resources/s4_core_conf_typical.xml</source>
+      <outputDirectory>s4_core/conf/typical</outputDirectory>
+      <destName>s4_core_conf.xml</destName>
+    </file>
+    <file>
+      <source>${project.basedir}/src/main/resources/s4_core.properties_header_typical</source>
+      <outputDirectory>s4_core/conf/typical</outputDirectory>
+      <destName>s4_core.properties_header</destName>
+    </file>
+    <file>
+      <source>${project.basedir}/src/main/resources/s4_core_conf_typical.xml</source>
+      <outputDirectory>s4_core/conf/redbutton</outputDirectory>
+      <destName>s4_core_conf.xml</destName>
+    </file>
+    <file>
+      <source>${project.basedir}/src/main/resources/s4_core.properties_header_redbutton</source>
+      <outputDirectory>s4_core/conf/redbutton</outputDirectory>
+      <destName>s4_core.properties_header</destName>
+    </file>
+  </files>
   <fileSets>
     <fileSet>
-      <directory>src/main/resources</directory>
-      <outputDirectory />
-      <includes>
-	<include>s4_core_conf_typical.xml</include>
-	<include>s4_core.properties_header_typical</include>
-	<include>s4_core.properties_header_redbutton</include>
-	<include>schemas/EventWrapper_schema.js</include>
-	<include>log4j.xml</include>
-	<include>adapter_conf.xml</include>
-	<include>listener.xml</include>
-	<include>sender.xml</include>
-      </includes>
-    </fileSet>
-    <fileSet>
-      <directory>scripts</directory>
-      <outputDirectory>bin</outputDirectory>
-      <includes>
-	<include>s4_start.sh</include>
-	<include>s4_stop.sh</include>
-      </includes>
-    </fileSet>
-    <fileSet>
-      <directory>target</directory>
-      <outputDirectory />
+      <directory>${project.basedir}/target</directory>
+      <outputDirectory>s4_core/lib</outputDirectory>
       <includes>
 	<include>*.jar</include>
       </includes>
     </fileSet>
     <fileSet>
-      <directory />
-      <outputDirectory />
+      <directory>${project.basedir}/src/main/resources</directory>
+      <outputDirectory>s4_core/conf/typical</outputDirectory>
       <includes>
-	<include>pom.xml</include>
+	<include>adapter_conf.xml</include>
+	<include>log4j.xml</include>
       </includes>
+    </fileSet>
+    <fileSet>
+      <directory>${project.basedir}/src/main/resources</directory>
+      <outputDirectory>s4_core/conf/redbutton</outputDirectory>
+      <includes>
+	<include>adapter_conf.xml</include>
+	<include>log4j.xml</include>
+      </includes>
+    </fileSet>
+    <fileSet>
+      <directory>${project.basedir}/src/main/resources</directory>
+      <outputDirectory>s4_core/conf/redbutton/s4</outputDirectory>
+      <includes>
+	<include>sender.xml</include>
+	<include>listener.xml</include>
+      </includes>
+    </fileSet>
+    <fileSet>
+      <directory>${project.basedir}/scripts</directory>
+      <outputDirectory>bin</outputDirectory>
+      <includes>
+	<include>s4_start.sh</include>
+	<include>generate_load.sh</include>
+	<include>run_adapter.sh</include>
+      </includes>
+    </fileSet>
+    <fileSet>
+      <directory>${project.basedir}</directory>
+      <outputDirectory>s4_core/lock</outputDirectory>
+      <excludes>
+        <exclude>**/*</exclude>
+      </excludes>
+    </fileSet>
+    <fileSet>
+      <directory>${project.basedir}</directory>
+      <outputDirectory>s4_core/log</outputDirectory>
+      <excludes>
+        <exclude>**/*</exclude>
+      </excludes>
+    </fileSet>
+    <fileSet>
+      <directory>${project.basedir}</directory>
+      <outputDirectory>s4_apps</outputDirectory>
+      <excludes>
+        <exclude>**/*</exclude>
+      </excludes>
+    </fileSet>
+    <fileSet>
+      <directory>${project.basedir}</directory>
+      <outputDirectory>s4_exts</outputDirectory>
+      <excludes>
+        <exclude>**/*</exclude>
+      </excludes>
     </fileSet>
   </fileSets>
 </assembly>

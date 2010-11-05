@@ -119,9 +119,7 @@
       <resource>
         <directory>src/main/resources</directory>
         <excludes>
-          <exclude>**/*.properties</exclude>
-          <exclude>**/log4j.xml</exclude>
-          <exclude>schemas/*</exclude>
+          <exclude>*</exclude>
         </excludes>
       </resource>
     </resources>
