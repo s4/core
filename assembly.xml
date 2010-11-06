@@ -69,6 +69,7 @@
     </fileSet>
     <fileSet>
       <directory>${project.basedir}/scripts</directory>
+      <fileMode>0755</fileMode>
       <outputDirectory>bin</outputDirectory>
       <includes>
 	<include>s4_start.sh</include>
