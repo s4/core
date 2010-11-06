@@ -6,6 +6,7 @@
 # Build directory
 /target/
 !/target/site/apidocs/
+!/target/s4_core*.tar.gz
 
 # SVN
 .svn
