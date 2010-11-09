@@ -1,22 +1,16 @@
 <config version="-1">
-  <cluster name="mys4nodes" type="s4" mode="unicast">
+  <cluster name="s4" type="s4" mode="unicast">
     <node>
       <partition>0</partition>
       <machine>localhost</machine>
       <port>5077</port>
       <taskId>s4node-0</taskId>
     </node>  
-    <node>
-      <partition>1</partition>
-      <machine>localhost</machine>
-      <port>5078</port>
-      <taskId>s4node-1</taskId>
-    </node>  
   </cluster>
-  <cluster name="mys4adapters" type="adapter" mode="unicast">
+  <cluster name="s4" type="adapter" mode="unicast">
     <node>
       <machine>localhost</machine>
-      <taskId>adapter-1</taskId>
+      <taskId>adapter-0</taskId>
     </node>
   </cluster>
 </config>
