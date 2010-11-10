@@ -17,7 +17,10 @@ package io.s4;
 
 import io.s4.processor.PEContainer;
 import io.s4.processor.ProcessingElement;
+import io.s4.util.DrivenClock;
 import io.s4.util.S4Util;
+import io.s4.util.Clock;
+import io.s4.util.WallClock;
 import io.s4.util.Watcher;
 
 import java.io.File;
@@ -42,6 +45,7 @@ public class MainApp {
     private static String coreHome = "../s4_core";
     private static String appsHome = "../s4_apps";
     private static String extsHome = "../s4_exts";
+    private static String clockType = "";
 
     public static void main(String args[]) throws Exception {
         Options options = new Options();
@@ -162,11 +166,27 @@ public class MainApp {
         coreContext = new FileSystemXmlApplicationContext("file:" + configPath);
         ApplicationContext context = coreContext;
 
+        for (String bean : context.getBeanDefinitionNames()) {
+        	System.out.println(bean);
+        }
+        
         PEContainer peContainer = (PEContainer) context.getBean("peContainer");
 
         Watcher w = (Watcher) context.getBean("watcher");
         w.setConfigFilename(configPath);
-
+        
+		configPath = configBase + File.separatorChar
+				+ "wall_clock.xml";
+		configFile = new File(configPath);
+        System.out.println("configPath " + configPath);
+		if (!configFile.exists()) {
+			System.err.printf("S4 core clock config file %s does not exist\n",
+					configPath);
+		}
+		String [] configUrls = new String[1];
+		configUrls [0] = "file:" + configPath;
+		context = new FileSystemXmlApplicationContext(configUrls, context);
+        
         // load extension modules
         String[] configFileNames = getModuleConfigFiles(extsHome, prop);
         if (configFileNames.length > 0) {
@@ -176,6 +196,7 @@ public class MainApp {
             }
             context = new FileSystemXmlApplicationContext(configFileUrls,
                                                           context);
+
         }
 
         // load application modules
@@ -187,7 +208,9 @@ public class MainApp {
             }
             context = new FileSystemXmlApplicationContext(configFileUrls,
                                                           context);
-
+            for (String bean : context.getBeanDefinitionNames()) {
+            	System.out.println(bean);
+            }
             // attach any beans that implement ProcessingElement to the PE
             // Container
             String[] processingElementBeanNames = context.getBeanNamesForType(ProcessingElement.class);
@@ -198,7 +221,7 @@ public class MainApp {
                         + ((ProcessingElement) bean).getId());
                 peContainer.addProcessor((ProcessingElement) bean);
             }
-        }
+        }  
     }
 
     /**

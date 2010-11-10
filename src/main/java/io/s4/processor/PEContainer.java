@@ -15,22 +15,22 @@
  */
 package io.s4.processor;
 
-import io.s4.collector.Event;
+
 import io.s4.collector.EventWrapper;
 import io.s4.dispatcher.partitioner.CompoundKeyInfo;
 import io.s4.logger.Monitor;
-import io.s4.util.MetricsName;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+
+import io.s4.processor.PrototypeWrapper;
 
 import static io.s4.util.MetricsName.*;
 
@@ -251,6 +251,17 @@ public class PEContainer implements Runnable {
         countByEventType.put(key, countObj);
 
     }
+    
+	
+	public Map<String, Integer> getPECountMap() {
+	    Map<String, Integer> PECountMap = new HashMap<String, Integer>();     
+	    // we can use static Map in the class to overcome the construction overhead each time getPECountMap() is called. 
+		for (PrototypeWrapper processor : prototypeWrappers) {
+			PECountMap.put(processor.getId(),processor.getPECount());			
+		}
+		return PECountMap;
+	}
+
 
     class Watcher implements Runnable {
         public void run() {

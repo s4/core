@@ -38,6 +38,8 @@ mkdir $1/tools/load_generator/lib
 cp ../target/s4_core-*.dir/s4_core-*.jar $1/s4_core/lib
 cp ../target/s4_core-*.dir/lib/*.jar $1/s4_core/lib
 cp ../target/s4_core-*.dir/s4_core_conf_typical.xml $1/s4_core/conf/typical/s4_core_conf.xml
+cp ../target/s4_core-*.dir/wall_clock.xml $1/s4_core/conf/typical/wall_clock.xml
+cp ../target/s4_core-*.dir/driven_clock.xml $1/s4_core/conf/typical/driven_clock.xml
 cp ../target/s4_core-*.dir/adapter_conf.xml $1/s4_core/conf/typical/adapter_conf.xml
 cp ../target/s4_core-*.dir/log4j.xml $1/s4_core/conf/typical/log4j.xml
 cp ../target/s4_core-*.dir/s4_core.properties_header_typical $1/s4_core/conf/typical/s4_core.properties_header
@@ -47,7 +49,9 @@ cp -r ../target/s4_core-*.dir/schemas $1/s4_core/conf/typical/
 cp ../target/s4_core-*.dir/s4_core_conf_typical.xml $1/s4_core/conf/redbutton/s4_core_conf.xml
 cp ../target/s4_core-*.dir/adapter_conf.xml $1/s4_core/conf/redbutton/adapter_conf.xml
 cp ../target/s4_core-*.dir/log4j.xml $1/s4_core/conf/redbutton/log4j.xml
+cp ../target/s4_core-*.dir/driven_clock.xml $1/s4_core/conf/redbutton/driven_clock.xml
 cp ../target/s4_core-*.dir/s4_core.properties_header_redbutton $1/s4_core/conf/redbutton/s4_core.properties_header
+cp ../target/s4_core-*.dir/wall_clock.xml $1/s4_core/conf/redbutton/wall_clock.xml
 cp -r ../target/s4_core-*.dir/schemas $1/s4_core/conf/redbutton/
 cp ../target/s4_core-*.dir/sender.xml $1/s4_core/conf/redbutton/s4
 cp ../target/s4_core-*.dir/listener.xml $1/s4_core/conf/redbutton/s4
