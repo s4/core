@@ -17,10 +17,7 @@ package io.s4;
 
 import io.s4.processor.PEContainer;
 import io.s4.processor.ProcessingElement;
-import io.s4.util.DrivenClock;
 import io.s4.util.S4Util;
-import io.s4.util.Clock;
-import io.s4.util.WallClock;
 import io.s4.util.Watcher;
 
 import java.io.File;
@@ -45,7 +42,7 @@ public class MainApp {
     private static String coreHome = "../s4_core";
     private static String appsHome = "../s4_apps";
     private static String extsHome = "../s4_exts";
-    private static String clockType = "";
+    private static String clockType;
 
     public static void main(String args[]) throws Exception {
         Options options = new Options();
@@ -59,6 +56,12 @@ public class MainApp {
                                        .hasArg()
                                        .withDescription("applications home")
                                        .create("a"));
+        
+        options.addOption(OptionBuilder.withArgName("s4clock")
+						                .hasArg()
+						                .withDescription("s4 clock")
+						                .create("d"));
+        
 
         options.addOption(OptionBuilder.withArgName("extshome")
                                        .hasArg()
@@ -102,6 +105,10 @@ public class MainApp {
 
         if (commandLine.hasOption("a")) {
             appsHome = commandLine.getOptionValue("a");
+        }
+        
+        if (commandLine.hasOption("d")) {
+            clockType = commandLine.getOptionValue("d");
         }
 
         if (commandLine.hasOption("e")) {
@@ -150,42 +157,53 @@ public class MainApp {
             System.exit(1);
         }
 
+        ApplicationContext coreContext = null;
         String configBase = coreHome + File.separatorChar + "conf"
                 + File.separatorChar + configType;
-        String configPath = configBase + File.separatorChar
-                + "s4_core_conf.xml";
-        File configFile = new File(configPath);
-        if (!configFile.exists()) {
-            System.err.printf("S4 core config file %s does not exist\n",
-                              configPath);
-            System.exit(1);
+        String configPath = "";
+        List<String> coreConfigUrls = new ArrayList<String>(); 
+        File configFile = null;
+        
+        System.out.println("configBase : " + configBase);
+        
+        System.out.println("clockType " + clockType);
+
+        // load clock configuration
+        if (clockType != null) {
+            configPath = configBase + File.separatorChar + clockType + "_clock.xml";            
         }
+        else {
+            configPath = configBase + File.separatorChar + "wall_clock.xml";  
+        }
+            coreConfigUrls.add(configPath);
+            System.out.println("configPath : " + configPath);
 
         // load core config xml
-        ApplicationContext coreContext;
-        coreContext = new FileSystemXmlApplicationContext("file:" + configPath);
-        ApplicationContext context = coreContext;
-
-        for (String bean : context.getBeanDefinitionNames()) {
-        	System.out.println(bean);
+        configPath = configBase + File.separatorChar + "s4_core_conf.xml";
+        configFile = new File(configPath);
+        if (!configFile.exists()) {
+            System.err.printf("S4 core config file %s does not exist\n",
+                    configPath);
+            System.exit(1);
         }
+		
+        coreConfigUrls.add(configPath);
+        String[] coreConfigFiles = new String[coreConfigUrls.size()];
+        coreConfigUrls.toArray(coreConfigFiles);
+
+        String[] coreConfigFileUrls = new String[coreConfigFiles.length];
+        for (int i = 0; i < coreConfigFiles.length; i++) {
+            coreConfigFileUrls[i] = "file:" + coreConfigFiles[i];
+        }
+
+        coreContext = new FileSystemXmlApplicationContext(coreConfigFileUrls, coreContext);
+        ApplicationContext context = coreContext;        
         
         PEContainer peContainer = (PEContainer) context.getBean("peContainer");
 
         Watcher w = (Watcher) context.getBean("watcher");
         w.setConfigFilename(configPath);
-        
-		configPath = configBase + File.separatorChar
-				+ "wall_clock.xml";
-		configFile = new File(configPath);
-        System.out.println("configPath " + configPath);
-		if (!configFile.exists()) {
-			System.err.printf("S4 core clock config file %s does not exist\n",
-					configPath);
-		}
-		String [] configUrls = new String[1];
-		configUrls [0] = "file:" + configPath;
-		context = new FileSystemXmlApplicationContext(configUrls, context);
+
         
         // load extension modules
         String[] configFileNames = getModuleConfigFiles(extsHome, prop);
@@ -196,7 +214,6 @@ public class MainApp {
             }
             context = new FileSystemXmlApplicationContext(configFileUrls,
                                                           context);
-
         }
 
         // load application modules
@@ -208,9 +225,6 @@ public class MainApp {
             }
             context = new FileSystemXmlApplicationContext(configFileUrls,
                                                           context);
-            for (String bean : context.getBeanDefinitionNames()) {
-            	System.out.println(bean);
-            }
             // attach any beans that implement ProcessingElement to the PE
             // Container
             String[] processingElementBeanNames = context.getBeanNamesForType(ProcessingElement.class);
@@ -251,5 +265,5 @@ public class MainApp {
         configFileList.toArray(ret);
         System.out.println(Arrays.toString(ret));
         return ret;
-    }
+    }    
 }
