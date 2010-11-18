@@ -17,6 +17,10 @@
 package io.s4.util;
 
 public class WallClock implements Clock {
+	
+	public void init() {
+		
+	}
          
 	@Override
 	public long waitForTime(long targetTime) {
