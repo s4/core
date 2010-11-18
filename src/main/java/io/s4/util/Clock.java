@@ -18,7 +18,8 @@ package io.s4.util;
 
 public interface Clock {
 
-	public long waitForTime(long targetTime);
-	public long getCurrentTime();
-	
+    public long waitForTime(long targetTime);
+
+    public long getCurrentTime();
+
 }
