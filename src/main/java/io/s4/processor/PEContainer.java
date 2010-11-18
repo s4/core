@@ -32,7 +32,6 @@ import org.apache.log4j.Logger;
 
 import io.s4.processor.PrototypeWrapper;
 import io.s4.util.Clock;
-import io.s4.util.ClockSelector;
 import io.s4.util.EventClock;
 
 import static io.s4.util.MetricsName.*;
