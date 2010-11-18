@@ -21,6 +21,7 @@
     <property name="maxQueueSize" value="${pe_container_max_queue_size}"/>
     <property name="monitor" ref="monitor"/>
     <property name="trackByKey" value="true"/>
+    <property name="s4clock" ref="clock"/>
   </bean>
 
   <bean id="rawListener" class="io.s4.listener.CommLayerListener" init-method="init">
