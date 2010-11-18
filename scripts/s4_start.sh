@@ -25,6 +25,7 @@ if [ "$1" == "-h" ]; then
   echo "Usage: $0" >&2
   echo "  -c s4 core home" >&2
   echo "  -a s4 applications home" >&2
+  echo "  -d s4 clock type" >&2
   echo "  -e s4 extensions home" >&2
   echo "  -l communications layer lock file base directory" >&2
   echo "  -i instance id (for log file names)" >&2
@@ -37,11 +38,12 @@ BASE_DIR=`dirname $($READLINK -f $0)`
 CORE_HOME=`$READLINK -f ${BASE_DIR}/../s4_core`
 APPS_HOME=`$READLINK -f ${BASE_DIR}/../s4_apps`
 EXTS_HOME=`$READLINK -f ${BASE_DIR}/../s4_exts`
-
-while getopts ":c:a:i:z:l:g:e:" opt;
+S4_CLOCK="driven"
+while getopts ":c:a:d:i:z:l:g:e:" opt;
 do  case "$opt" in
     c) CORE_HOME=$OPTARG;;
     a) APPS_HOME=$OPTARG;;
+    d) S4_CLOCK=$OPTARG;;
     e) EXTS_HOME=$OPTARG;;
     i) INSTANCE_ID=$OPTARG;;
     l) LOCK_DIR=$OPTARG;;
@@ -140,7 +142,6 @@ echo "EXTS_HOME='$EXTS_HOME'"
 echo "GC_OPTS='$GC_OPTS'"
 echo "MEM_OPTS='$MEM_OPTS'"
 echo "JAVA_OPTS='$JAVA_OPTS'"
-
 # figure out the location of the java command
 
 JAVA_LOC=""
@@ -175,7 +176,7 @@ CLASSPATH=$CLASSPATH$CP_SEP$TMP1$CP_SEP$CONF_LOC
 #STARTING S4 
 #---------------------------------------------
 
-CMD="${JAVA_LOC}java $GC_OPTS $DEBUG_OPTS $MEM_OPTS $JAVA_OPTS -classpath $CORE_HOME$CP_SEP$CLASSPATH -DDequeuerCount=6 -Dlog4j.configuration=file:${CONF_LOC}/log4j.xml io.s4.MainApp -c ${CORE_HOME} -a ${APPS_HOME} -e ${EXTS_HOME} -t ${CONF_TYPE}"
+CMD="${JAVA_LOC}java $GC_OPTS $DEBUG_OPTS $MEM_OPTS $JAVA_OPTS -classpath $CORE_HOME$CP_SEP$CLASSPATH -DDequeuerCount=6 -Dlog4j.configuration=file:${CONF_LOC}/log4j.xml io.s4.MainApp -c ${CORE_HOME} -a ${APPS_HOME} -e ${EXTS_HOME} -t ${CONF_TYPE} -d ${S4_CLOCK}"
 echo "RUNNING $CMD"
 
 $CMD
