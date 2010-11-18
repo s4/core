@@ -17,6 +17,7 @@
 package io.s4.util;
 
 import io.s4.collector.EventWrapper;
+import io.s4.processor.PEContainer;
 import io.s4.schema.Schema;
 import io.s4.schema.SchemaContainer;
 import io.s4.schema.Schema.Property;
@@ -24,39 +25,61 @@ import io.s4.schema.Schema.Property;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
 public class EventClock extends DrivenClock {
 
-	Map<String, String> eventClockStreamsMap = new HashMap<String, String>();
-	SchemaContainer schemaContainer = new SchemaContainer();
-	
-	public void update(EventWrapper eventWrapper) {
-		long eventTime = -1;
-		String streamName = eventWrapper.getStreamName();
-		if (eventClockStreamsMap.containsKey(streamName)) {
-			String fieldName = eventClockStreamsMap.get(streamName);
-			Object event = eventWrapper.getEvent();
-	        Schema schema = schemaContainer.getSchema(event.getClass());
+    private static Logger logger = Logger.getLogger(PEContainer.class);
+    Map<String, String> eventClockStreamsMap;
+    SchemaContainer schemaContainer;
+
+    public void init() {
+        eventClockStreamsMap = new HashMap<String, String>();
+        schemaContainer = new SchemaContainer();
+    }
+
+    public void update(EventWrapper eventWrapper) {
+        long eventTime = -1;
+        String streamName = eventWrapper.getStreamName();
+        if (eventClockStreamsMap.containsKey(streamName)) {
+            String fieldName = eventClockStreamsMap.get(streamName);
+            Object event = eventWrapper.getEvent();
+            Schema schema = schemaContainer.getSchema(event.getClass());
             if (fieldName != null) {
                 Property property = schema.getProperties().get(fieldName);
                 if (property != null
-                        && (property.getType().equals(Long.TYPE) || property.getType()
-                                                                            .equals(Long.class))) {
+                        && (property.getType().equals(Long.TYPE) || property
+                                .getType().equals(Long.class))) {
                     try {
-                        eventTime = (Long) property.getGetterMethod()
-                                                   .invoke(event);
+                        eventTime = (Long) property.getGetterMethod().invoke(
+                                event);
                         updateTime(eventTime);
+                        logger.debug("Updating Event Clock time "
+                                + eventTime);
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
                 }
             }
-		}
-	}
-	
-	public void addEventClockStream(String streamName, String fieldName) {
-		eventClockStreamsMap.put(streamName, fieldName);
-	}
-	
-	
-	
+        }
+    }
+
+    public void addEventClockStream(String streamName, String fieldName) {
+        if (eventClockStreamsMap.containsKey(streamName)) {
+            if (!eventClockStreamsMap.get(streamName).equals(fieldName)) {
+                // we can add an runtime exception over error messages for
+                // making debugging easy
+                logger.error("Stream " + streamName
+                        + " already has a timestamp field defined "
+                        + eventClockStreamsMap.get(streamName));
+                logger.error("Stream " + streamName
+                        + " is updating the timestamp field to " + fieldName);
+            }
+        } else {
+            eventClockStreamsMap.put(streamName, fieldName);
+            System.out.println("adding stream " + streamName + " with field " + fieldName );
+        }
+        eventClockStreamsMap.put(streamName, fieldName);
+    }
+
 }
