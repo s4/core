@@ -31,6 +31,9 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import io.s4.processor.PrototypeWrapper;
+import io.s4.util.Clock;
+import io.s4.util.ClockSelector;
+import io.s4.util.EventClock;
 
 import static io.s4.util.MetricsName.*;
 
@@ -39,6 +42,7 @@ public class PEContainer implements Runnable {
     BlockingQueue<EventWrapper> workQueue;
     private List<PrototypeWrapper> prototypeWrappers = new ArrayList<PrototypeWrapper>();
     private Monitor monitor;
+    private Clock s4clock;
     private int maxQueueSize = 1000;
     private boolean trackByKey;
     private Map<String, Integer> countByEventType = Collections.synchronizedMap(new HashMap<String, Integer>());
@@ -49,6 +53,10 @@ public class PEContainer implements Runnable {
 
     public void setMonitor(Monitor monitor) {
         this.monitor = monitor;
+    }
+
+    public void setS4clock(Clock s4clock) {
+        this.s4clock = s4clock;
     }
 
     public void setTrackByKey(boolean trackByKey) {
@@ -123,7 +131,11 @@ public class PEContainer implements Runnable {
             EventWrapper eventWrapper = null;
             try {
                 eventWrapper = workQueue.take();
-
+                if (s4clock instanceof EventClock) {
+                    EventClock eventClock = (EventClock) s4clock;
+                    eventClock.update(eventWrapper);
+                    // To what time to update the clock
+                }
                 if (trackByKey) {
                     boolean foundOne = false;
                     for (CompoundKeyInfo compoundKeyInfo : eventWrapper.getCompoundKeys()) {
