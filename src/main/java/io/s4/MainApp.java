@@ -42,7 +42,6 @@ public class MainApp {
     private static String coreHome = "../s4_core";
     private static String appsHome = "../s4_apps";
     private static String extsHome = "../s4_exts";
-    private static String clockType;
 
     public static void main(String args[]) throws Exception {
         Options options = new Options();
@@ -56,12 +55,11 @@ public class MainApp {
                                        .hasArg()
                                        .withDescription("applications home")
                                        .create("a"));
-        
+
         options.addOption(OptionBuilder.withArgName("s4clock")
-						                .hasArg()
-						                .withDescription("s4 clock")
-						                .create("d"));
-        
+                                       .hasArg()
+                                       .withDescription("s4 clock")
+                                       .create("d"));
 
         options.addOption(OptionBuilder.withArgName("extshome")
                                        .hasArg()
@@ -80,6 +78,7 @@ public class MainApp {
 
         CommandLineParser parser = new GnuParser();
         CommandLine commandLine = null;
+        String clockType = null;
 
         try {
             commandLine = parser.parse(options, args);
@@ -163,10 +162,6 @@ public class MainApp {
         String configPath = "";
         List<String> coreConfigUrls = new ArrayList<String>(); 
         File configFile = null;
-        
-        System.out.println("configBase : " + configBase);
-        
-        System.out.println("clockType " + clockType);
 
         // load clock configuration
         if (clockType != null) {
@@ -175,8 +170,7 @@ public class MainApp {
         else {
             configPath = configBase + File.separatorChar + "wall_clock.xml";  
         }
-            coreConfigUrls.add(configPath);
-            System.out.println("configPath : " + configPath);
+        coreConfigUrls.add(configPath);
 
         // load core config xml
         configPath = configBase + File.separatorChar + "s4_core_conf.xml";

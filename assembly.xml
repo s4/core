@@ -25,9 +25,9 @@
       <destName>wall_clock.xml</destName>
     </file>
     <file>
-      <source>${project.basedir}/src/main/resources/driven_clock.xml</source>
+      <source>${project.basedir}/src/main/resources/event_clock.xml</source>
       <outputDirectory>s4_core/conf/typical</outputDirectory>
-      <destName>driven_clock.xml</destName>
+      <destName>event_clock.xml</destName>
     </file>
     <file>
       <source>${project.basedir}/src/main/resources/s4_core.properties_header_typical</source>
@@ -45,9 +45,9 @@
       <destName>wall_clock.xml</destName>
     </file>
     <file>
-      <source>${project.basedir}/src/main/resources/driven_clock.xml</source>
+      <source>${project.basedir}/src/main/resources/event_clock.xml</source>
       <outputDirectory>s4_core/conf/redbutton</outputDirectory>
-      <destName>driven_clock.xml</destName>
+      <destName>event_clock.xml</destName>
     </file>
     <file>
       <source>${project.basedir}/src/main/resources/s4_core.properties_header_redbutton</source>

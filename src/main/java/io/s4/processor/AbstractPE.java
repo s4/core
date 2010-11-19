@@ -59,7 +59,7 @@ public abstract class AbstractPE implements ProcessingElement {
         }
     }
 
-    private Clock s4clock;
+    private Clock s4Clock;
     private int outputFrequency = 1;
     private FrequencyType outputFrequencyType = FrequencyType.EVENTCOUNT;
     private int outputFrequencyOffset = 0;
@@ -91,12 +91,12 @@ public abstract class AbstractPE implements ProcessingElement {
         this.logPauses = logPauses;
     }
     
-    public void setS4clock(Clock s4clock) {
-        this.s4clock = s4clock;
+    public void setS4clock(Clock s4Clock) {
+        this.s4Clock = s4Clock;
     }
 
-    public Clock getS4clock() {
-        return s4clock;
+    public Clock getS4Clock() {
+        return s4Clock;
     }
     
     private OverloadDispatcher overloadDispatcher;
@@ -147,7 +147,7 @@ public abstract class AbstractPE implements ProcessingElement {
     }
 
     public long getCurrentTime() {
-        return s4clock.getCurrentTime();
+        return s4Clock.getCurrentTime();
     }
 
     /**
@@ -392,7 +392,7 @@ public abstract class AbstractPE implements ProcessingElement {
                 long currentBoundary = (currentTime / frequencyInMillis)
                         * frequencyInMillis;
                 long nextBoundary = currentBoundary + frequencyInMillis;
-                currentTime = s4clock.waitForTime(nextBoundary
+                currentTime = s4Clock.waitForTime(nextBoundary
                             + (outputFrequencyOffset * 1000));
                 if (lookupTable != null) {
                     Set peKeys = lookupTable.keySet();
