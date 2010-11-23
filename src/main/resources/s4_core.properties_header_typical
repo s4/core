@@ -6,3 +6,4 @@ listener_max_queue_size=8000
 commlayer_mode=dynamic
 zk_session_timeout=5000
 deamon_mode_enabled=false
+zk_address=localhost:2181

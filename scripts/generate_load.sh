@@ -35,7 +35,7 @@ CORE_HOME=`$READLINK -f ${BASE_DIR}/../s4_core`
 CP_SEP=":"
 REDBUTTON_MODE="false"
 
-while getopts ":c:z:a:r:d:l:u:x" opt;
+while getopts ":c:z:a:g:r:d:l:u:x" opt;
 do  case "$opt" in
     c) CORE_HOME=$OPTARG;;
     z) CLUSTER_MANAGER=$OPTARG;;

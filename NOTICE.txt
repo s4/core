@@ -6,3 +6,8 @@ the Apache License, Version 2.0, in this case for the S4 project.
    This product includes software developed by
    Yahoo! Inc. (www.yahoo.com)
    Copyright (c) 2010 Yahoo! Inc.  All rights reserved.
+
+   Kryo binaries, distributed in lib/kryo-1.01.jar, developed by
+   Nathan Sweet
+   Copyright (c) 2008, Nathan Sweet.
+   All rights reserved.
