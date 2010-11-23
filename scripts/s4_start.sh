@@ -38,7 +38,7 @@ BASE_DIR=`dirname $($READLINK -f $0)`
 CORE_HOME=`$READLINK -f ${BASE_DIR}/../s4_core`
 APPS_HOME=`$READLINK -f ${BASE_DIR}/../s4_apps`
 EXTS_HOME=`$READLINK -f ${BASE_DIR}/../s4_exts`
-S4_CLOCK="event"
+S4_CLOCK="wall"
 while getopts ":c:a:d:i:z:l:g:e:" opt;
 do  case "$opt" in
     c) CORE_HOME=$OPTARG;;

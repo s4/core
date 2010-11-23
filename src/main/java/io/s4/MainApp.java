@@ -17,10 +17,12 @@ package io.s4;
 
 import io.s4.processor.PEContainer;
 import io.s4.processor.ProcessingElement;
+import io.s4.util.Clock;
 import io.s4.util.S4Util;
 import io.s4.util.Watcher;
 
 import java.io.File;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -36,6 +38,7 @@ import org.apache.commons.cli.ParseException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 import org.springframework.core.io.ClassPathResource;
+
 
 public class MainApp {
 
@@ -224,6 +227,21 @@ public class MainApp {
             String[] processingElementBeanNames = context.getBeanNamesForType(ProcessingElement.class);
             for (String processingElementBeanName : processingElementBeanNames) {
                 Object bean = context.getBean(processingElementBeanName);
+                try {
+                    Method getS4ClockMethod = bean.getClass().getMethod("getS4Clock");
+    
+                    if (getS4ClockMethod.getReturnType().equals(Clock.class)) {
+                        if (getS4ClockMethod.invoke(bean) == null) {
+                            Method setS4ClockMethod = bean.getClass().getMethod("setS4Clock", Clock.class);
+                            System.out.println("Clock is " + coreContext.getBean("clock"));
+                            setS4ClockMethod.invoke(bean, coreContext.getBean("clock"));
+                            System.out.println("Setting clock for " + processingElementBeanName);
+                        }
+                    }
+                }
+                catch (NoSuchMethodException mnfe) {
+                    mnfe.printStackTrace();
+                }
                 System.out.println("Adding processing element with bean name "
                         + processingElementBeanName + ", id "
                         + ((ProcessingElement) bean).getId());

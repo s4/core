@@ -25,40 +25,35 @@ import io.s4.schema.Schema.Property;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 public class EventClock extends DrivenClock {
 
-    private static Logger logger = Logger.getLogger(PEContainer.class);
-    Map<String, String> eventClockStreamsMap;
-    SchemaContainer schemaContainer;
+    private static Logger logger = Logger.getLogger(EventClock.class);
 
-    public void init() {
-        eventClockStreamsMap = new HashMap<String, String>();
-        schemaContainer = new SchemaContainer();
-    }
+    Map<String, String> eventClockStreamsMap = new HashMap<String, String>();
+    SchemaContainer schemaContainer = new SchemaContainer();
 
     public void update(EventWrapper eventWrapper) {
         long eventTime = -1;
         String streamName = eventWrapper.getStreamName();
-        if (eventClockStreamsMap.containsKey(streamName)) {
-            String fieldName = eventClockStreamsMap.get(streamName);
+        String fieldName = eventClockStreamsMap.get(streamName);
+        if (fieldName != null) {
             Object event = eventWrapper.getEvent();
             Schema schema = schemaContainer.getSchema(event.getClass());
-            if (fieldName != null) {
-                Property property = schema.getProperties().get(fieldName);
-                if (property != null
-                        && (property.getType().equals(Long.TYPE) || property
-                                .getType().equals(Long.class))) {
-                    try {
-                        eventTime = (Long) property.getGetterMethod().invoke(
-                                event);
-                        updateTime(eventTime);
-                        logger.debug("Updating Event Clock time "
-                                + eventTime);
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
+            Property property = schema.getProperties().get(fieldName);
+            if (property != null
+                    && (property.getType().equals(Long.TYPE) || property
+                            .getType().equals(Long.class))) {
+                try {
+                    eventTime = (Long) property.getGetterMethod().invoke(event);
+                    updateTime(eventTime);
+//                    if (logger.isDebugEnabled()) {
+                        logger.info("Updating Event Clock time " + eventTime);
+//                    }
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
                 }
             }
         }
@@ -74,12 +69,12 @@ public class EventClock extends DrivenClock {
                         + eventClockStreamsMap.get(streamName));
                 logger.error("Stream " + streamName
                         + " is updating the timestamp field to " + fieldName);
+                eventClockStreamsMap.put(streamName, fieldName);
             }
         } else {
             eventClockStreamsMap.put(streamName, fieldName);
-            System.out.println("adding stream " + streamName + " with field " + fieldName );
+            System.out.println("adding stream " + streamName + " with field "
+                    + fieldName);
         }
-        eventClockStreamsMap.put(streamName, fieldName);
     }
-
 }

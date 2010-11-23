@@ -23,21 +23,21 @@ import org.apache.log4j.Logger;
 public class ClockStreamsLoader {
 
     private static Logger logger = Logger.getLogger(ClockStreamsLoader.class);
-    Clock s4clock;
+    Clock s4Clock;
     HashMap<String, String> streamFieldMap;
 
     public void setStreamFieldMap(HashMap<String, String> streamFieldMap) {
         this.streamFieldMap = streamFieldMap;
     }
 
-    public void setS4clock(Clock s4clock) {
-        this.s4clock = s4clock;
+    public void setS4Clock(Clock s4Clock) {
+        this.s4Clock = s4Clock;
     }
 
     public void addStreams() {
         System.out.println("Adding application streams to s4 clock");
-        if (s4clock instanceof EventClock) {
-            EventClock eventClock = (EventClock) s4clock;
+        if (s4Clock instanceof EventClock) {
+            EventClock eventClock = (EventClock) s4Clock;
             for (String streamName : streamFieldMap.keySet()) {
                 eventClock.addEventClockStream(streamName,
                         streamFieldMap.get(streamName));

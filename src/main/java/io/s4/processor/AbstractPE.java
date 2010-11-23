@@ -91,8 +91,9 @@ public abstract class AbstractPE implements ProcessingElement {
         this.logPauses = logPauses;
     }
     
-    public void setS4clock(Clock s4Clock) {
+    public void setS4Clock(Clock s4Clock) {
         this.s4Clock = s4Clock;
+        initFrequency();
     }
 
     public Clock getS4Clock() {
@@ -265,7 +266,6 @@ public abstract class AbstractPE implements ProcessingElement {
     public void setOutputFrequencyByEventCount(int outputFrequency) {
         this.outputFrequency = outputFrequency;
         this.outputFrequencyType = FrequencyType.EVENTCOUNT;
-        initFrequency();
     }
 
     /**
@@ -300,7 +300,6 @@ public abstract class AbstractPE implements ProcessingElement {
     public void setOutputFrequencyByTimeBoundary(int outputFrequency) {
         this.outputFrequency = outputFrequency;
         this.outputFrequencyType = FrequencyType.TIMEBOUNDARY;
-        initFrequency();
     }
 
     /**
