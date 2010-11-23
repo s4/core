@@ -13,7 +13,6 @@
  * language governing permissions and limitations under the
  * License. See accompanying LICENSE file. 
  */
-
 package io.s4.test;
 
 import io.s4.persist.ConMapPersister;
@@ -25,8 +24,7 @@ public class TestPersisterWallClock {
 
     static WallClock s4Clock;
     static Persister persister;
-    
-    
+
     public static void main(String[] args) {
         TestPersisterWallClock testPersisterClock = new TestPersisterWallClock();
         s4Clock = new WallClock();
@@ -35,12 +33,12 @@ public class TestPersisterWallClock {
         persister = new ConMapPersister(s4Clock);
         testPersisterClock.testPersister(persister);
     }
-    
+
     public void testPersister(Persister persister) {
         HashMapPersister hp = null;
         ConMapPersister cp = null;
         if (persister instanceof HashMapPersister) {
-            hp = (HashMapPersister)persister;
+            hp = (HashMapPersister) persister;
             hp.init();
 
             hp.set("mykey1", "Test1", 40);
@@ -81,7 +79,7 @@ public class TestPersisterWallClock {
 
         }
         if (persister instanceof ConMapPersister) {
-            cp = (ConMapPersister)persister;
+            cp = (ConMapPersister) persister;
             cp.init();
 
             cp.set("mykey1", "Test1", 40);

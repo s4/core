@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2010 Yahoo! Inc. All rights reserved.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *          http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
+ * language governing permissions and limitations under the
+ * License. See accompanying LICENSE file. 
+ */
 package io.s4.test;
 
 import io.s4.persist.ConMapPersister;
@@ -8,13 +23,13 @@ import io.s4.util.EventClock;
 public class TestPersisterEventClock {
 
     static EventClock s4Clock;
-    static Persister persister;  
-    
+    static Persister persister;
+
     public static void main(String[] args) {
         TestPersisterEventClock testPersisterClock = new TestPersisterEventClock();
         s4Clock = new EventClock();
         s4Clock.updateTime(69990000);
-        TimeUpdaterThread timeUpdater  = new TimeUpdaterThread(s4Clock);
+        TimeUpdaterThread timeUpdater = new TimeUpdaterThread(s4Clock);
         Thread timeUpdaterThread = new Thread(timeUpdater);
         timeUpdaterThread.start();
         persister = new HashMapPersister(s4Clock);
@@ -22,12 +37,12 @@ public class TestPersisterEventClock {
         persister = new ConMapPersister(s4Clock);
         testPersisterClock.testPersister(persister);
     }
-    
+
     public void testPersister(Persister persister) {
         HashMapPersister hp = null;
         ConMapPersister cp = null;
         if (persister instanceof HashMapPersister) {
-            hp = (HashMapPersister)persister;
+            hp = (HashMapPersister) persister;
             hp.init();
 
             hp.set("mykey1", "Test1", 40);
@@ -68,7 +83,7 @@ public class TestPersisterEventClock {
 
         }
         if (persister instanceof ConMapPersister) {
-            cp = (ConMapPersister)persister;
+            cp = (ConMapPersister) persister;
             cp.init();
 
             cp.set("mykey1", "Test1", 40);
@@ -108,7 +123,4 @@ public class TestPersisterEventClock {
             System.out.println("cleanUp: " + cp.cleanOutGarbage());
         }
     }
-    
-
-    
 }
