@@ -41,7 +41,7 @@ public class PEContainer implements Runnable {
     BlockingQueue<EventWrapper> workQueue;
     private List<PrototypeWrapper> prototypeWrappers = new ArrayList<PrototypeWrapper>();
     private Monitor monitor;
-    private Clock s4clock;
+    private Clock s4Clock;
     private int maxQueueSize = 1000;
     private boolean trackByKey;
     private Map<String, Integer> countByEventType = Collections.synchronizedMap(new HashMap<String, Integer>());
@@ -54,8 +54,12 @@ public class PEContainer implements Runnable {
         this.monitor = monitor;
     }
 
-    public void setS4clock(Clock s4clock) {
-        this.s4clock = s4clock;
+    public void setS4Clock(Clock s4Clock) {
+        this.s4Clock = s4Clock;
+    }
+    
+    public Clock getS4Clock() {
+        return s4Clock;
     }
 
     public void setTrackByKey(boolean trackByKey) {
@@ -64,7 +68,7 @@ public class PEContainer implements Runnable {
 
     public void addProcessor(ProcessingElement processor) {
         System.out.println("adding pe: " + processor);
-        PrototypeWrapper pw = new PrototypeWrapper(processor);
+        PrototypeWrapper pw = new PrototypeWrapper(processor, s4Clock);
         prototypeWrappers.add(pw);
         adviceLists.add(pw.advise());
     }
@@ -73,7 +77,7 @@ public class PEContainer implements Runnable {
         // prototypeWrappers = new ArrayList<PrototypeWrapper>();
 
         for (int i = 0; i < processors.length; i++) {
-            prototypeWrappers.add(new PrototypeWrapper(processors[i]));
+            addProcessor(processors[i]);   
         }
     }
 
@@ -130,8 +134,8 @@ public class PEContainer implements Runnable {
             EventWrapper eventWrapper = null;
             try {
                 eventWrapper = workQueue.take();
-                if (s4clock instanceof EventClock) {
-                    EventClock eventClock = (EventClock) s4clock;
+                if (s4Clock instanceof EventClock) {
+                    EventClock eventClock = (EventClock) s4Clock;
                     eventClock.update(eventWrapper);
                     // To what time to update the clock
                 }
@@ -260,19 +264,7 @@ public class PEContainer implements Runnable {
         }
         countObj++;
         countByEventType.put(key, countObj);
-
     }
-    
-	
-	public Map<String, Integer> getPECountMap() {
-	    Map<String, Integer> PECountMap = new HashMap<String, Integer>();     
-	    // we can use static Map in the class to overcome the construction overhead each time getPECountMap() is called. 
-		for (PrototypeWrapper processor : prototypeWrappers) {
-			PECountMap.put(processor.getId(),processor.getPECount());			
-		}
-		return PECountMap;
-	}
-
 
     class Watcher implements Runnable {
         public void run() {

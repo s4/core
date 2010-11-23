@@ -17,37 +17,24 @@
 package io.s4.util;
 
 public class WallClock implements Clock {
-	
-	public void init() {
-		
-	}
-         
-	@Override
-	public long waitForTime(long targetTime) {
-		long interval = (targetTime - getCurrentTime());
-		if (interval > 0) {
-			try {
-				Thread.sleep(interval);
-			} catch (InterruptedException ie) {
-				Thread.currentThread().interrupt();
-			}
-		}
-		return getCurrentTime();
-	}
 
-	@Override
-	public long getCurrentTime() {
-		// TODO Auto-generated method stub
-		return System.currentTimeMillis();
-	}
-	
-	public long sleep(long interval) {
-		try {
-			Thread.sleep(interval);
-		} catch (InterruptedException ie) {
-			Thread.currentThread().interrupt();
-		}
-		return getCurrentTime();
-	}
-	
+    @Override
+    public long waitForTime(long targetTime) {
+        long interval = (targetTime - getCurrentTime());
+        if (interval > 0) {
+            try {
+                Thread.sleep(interval);
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+            }
+        }
+        return getCurrentTime();
+    }
+
+    @Override
+    public long getCurrentTime() {
+        // TODO Auto-generated method stub
+        return System.currentTimeMillis();
+    }
+
 }
