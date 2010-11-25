@@ -74,7 +74,7 @@ public abstract class AbstractPE implements ProcessingElement {
     private int outputsBeforePause = -1;
     private long pauseTimeInMillis;
     private boolean logPauses = false;
-
+    
     public void setSaveKeyRecord(boolean saveKeyRecord) {
         this.saveKeyRecord = saveKeyRecord;
     }
@@ -92,8 +92,10 @@ public abstract class AbstractPE implements ProcessingElement {
     }
     
     public void setS4Clock(Clock s4Clock) {
-        this.s4Clock = s4Clock;
-        initFrequency();
+        synchronized (this) {
+            this.s4Clock = s4Clock;
+            this.notify();
+        }
     }
 
     public Clock getS4Clock() {
@@ -266,6 +268,7 @@ public abstract class AbstractPE implements ProcessingElement {
     public void setOutputFrequencyByEventCount(int outputFrequency) {
         this.outputFrequency = outputFrequency;
         this.outputFrequencyType = FrequencyType.EVENTCOUNT;
+        initFrequency();
     }
 
     /**
@@ -300,6 +303,7 @@ public abstract class AbstractPE implements ProcessingElement {
     public void setOutputFrequencyByTimeBoundary(int outputFrequency) {
         this.outputFrequency = outputFrequency;
         this.outputFrequencyType = FrequencyType.TIMEBOUNDARY;
+        initFrequency();
     }
 
     /**
@@ -383,6 +387,14 @@ public abstract class AbstractPE implements ProcessingElement {
 
     class OutputInvoker implements Runnable {
         public void run() {
+            synchronized (this) {
+                while (s4Clock == null) {
+                    try {
+                        this.wait();
+                    }
+                    catch (InterruptedException ie) {}
+                }
+            }
             int outputCount = 0;
             long frequencyInMillis = outputFrequency * 1000;
 
@@ -433,5 +445,5 @@ public abstract class AbstractPE implements ProcessingElement {
                 } // end if lookup table is not null
             }
         }
-    }
+    }    
 }

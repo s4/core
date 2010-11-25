@@ -60,6 +60,10 @@ public class ConMapPersister implements Persister {
         this.s4Clock = s4Clock;
     }
     
+    public void setS4Clock(Clock s4Clock) {
+        this.s4Clock = s4Clock;
+    }
+    
     public ConMapPersister() {
     }
 

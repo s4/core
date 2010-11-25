@@ -35,7 +35,6 @@ public class ClockStreamsLoader {
     }
 
     public void addStreams() {
-        System.out.println("Adding application streams to s4 clock");
         if (s4Clock instanceof EventClock) {
             EventClock eventClock = (EventClock) s4Clock;
             for (String streamName : streamFieldMap.keySet()) {

@@ -81,7 +81,7 @@ public class MainApp {
 
         CommandLineParser parser = new GnuParser();
         CommandLine commandLine = null;
-        String clockType = null;
+        String clockType = "wall";
 
         try {
             commandLine = parser.parse(options, args);
@@ -167,12 +167,7 @@ public class MainApp {
         File configFile = null;
 
         // load clock configuration
-        if (clockType != null) {
-            configPath = configBase + File.separatorChar + clockType + "_clock.xml";            
-        }
-        else {
-            configPath = configBase + File.separatorChar + "wall_clock.xml";  
-        }
+        configPath = configBase + File.separatorChar + clockType + "_clock.xml";            
         coreConfigUrls.add(configPath);
 
         // load core config xml
@@ -233,14 +228,12 @@ public class MainApp {
                     if (getS4ClockMethod.getReturnType().equals(Clock.class)) {
                         if (getS4ClockMethod.invoke(bean) == null) {
                             Method setS4ClockMethod = bean.getClass().getMethod("setS4Clock", Clock.class);
-                            System.out.println("Clock is " + coreContext.getBean("clock"));
                             setS4ClockMethod.invoke(bean, coreContext.getBean("clock"));
-                            System.out.println("Setting clock for " + processingElementBeanName);
                         }
                     }
                 }
                 catch (NoSuchMethodException mnfe) {
-                    mnfe.printStackTrace();
+                    // acceptable
                 }
                 System.out.println("Adding processing element with bean name "
                         + processingElementBeanName + ", id "

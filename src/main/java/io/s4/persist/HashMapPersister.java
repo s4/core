@@ -20,10 +20,8 @@ import io.s4.util.Clock;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -60,6 +58,10 @@ public class HashMapPersister implements Persister {
     }
 
     public HashMapPersister(Clock s4Clock) {
+        this.s4Clock = s4Clock;
+    }
+    
+    public void setS4Clock(Clock s4Clock) {
         this.s4Clock = s4Clock;
     }
 

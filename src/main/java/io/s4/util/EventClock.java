@@ -17,7 +17,6 @@
 package io.s4.util;
 
 import io.s4.collector.EventWrapper;
-import io.s4.processor.PEContainer;
 import io.s4.schema.Schema;
 import io.s4.schema.SchemaContainer;
 import io.s4.schema.Schema.Property;
@@ -25,7 +24,6 @@ import io.s4.schema.Schema.Property;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 public class EventClock extends DrivenClock {
@@ -49,9 +47,6 @@ public class EventClock extends DrivenClock {
                 try {
                     eventTime = (Long) property.getGetterMethod().invoke(event);
                     updateTime(eventTime);
-//                    if (logger.isDebugEnabled()) {
-                        logger.info("Updating Event Clock time " + eventTime);
-//                    }
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -60,8 +55,9 @@ public class EventClock extends DrivenClock {
     }
 
     public void addEventClockStream(String streamName, String fieldName) {
-        if (eventClockStreamsMap.containsKey(streamName)) {
-            if (!eventClockStreamsMap.get(streamName).equals(fieldName)) {
+        String fieldNameInStream = eventClockStreamsMap.get(streamName);
+        if (fieldNameInStream != null) {
+            if (!fieldNameInStream.equals(fieldName)) {
                 // we can add an runtime exception over error messages for
                 // making debugging easy
                 logger.error("Stream " + streamName
@@ -73,8 +69,6 @@ public class EventClock extends DrivenClock {
             }
         } else {
             eventClockStreamsMap.put(streamName, fieldName);
-            System.out.println("adding stream " + streamName + " with field "
-                    + fieldName);
         }
     }
 }
