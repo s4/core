@@ -34,6 +34,11 @@
       <outputDirectory>s4_core/conf/redbutton</outputDirectory>
       <destName>s4_core.properties_header</destName>
     </file>
+    <file>
+      <source>${project.basedir}/src/main/resources/clusters_example.xml</source>
+      <outputDirectory>s4_core/conf/redbutton</outputDirectory>
+      <destName>clusters.xml</destName>
+    </file>
   </files>
   <fileSets>
     <fileSet>
@@ -57,14 +62,6 @@
       <includes>
 	<include>adapter_conf.xml</include>
 	<include>log4j.xml</include>
-      </includes>
-    </fileSet>
-    <fileSet>
-      <directory>${project.basedir}/src/main/resources</directory>
-      <outputDirectory>s4_core/conf/redbutton/s4</outputDirectory>
-      <includes>
-	<include>sender.xml</include>
-	<include>listener.xml</include>
       </includes>
     </fileSet>
     <fileSet>

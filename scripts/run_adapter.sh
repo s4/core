@@ -1,5 +1,11 @@
 #/bin/bash
 
+get_property()
+{
+  val=`sed '/^\#/d' ${CONF_LOC}/s4_core.properties_header | grep $1  | tail -n 1 | sed 's/^[^=]*=//;s/^[[:space:]]*//;s/[[:space:]]*$//'`
+  echo "$val"
+}
+
 osx=false
 case "`uname`" in
 Darwin*) osx=true;;
@@ -65,6 +71,7 @@ fi
 CONF_FILE=${CORE_HOME}"/conf/"${CONF_TYPE}"/adapter_conf.xml"
 CONF_LOC=`dirname $CONF_FILE`
 LOG_LOC="${CORE_HOME}/logs"
+COMMLAYER_MODE=$(get_property "commlayer_mode")
 
 if [ "x$CLUSTER_MANAGER" == "x" ] ; then
     CLUSTER_MANAGER="localhost:2181"
@@ -114,9 +121,11 @@ CLASSPATH=`find $CORE_HOME -name "*.jar" | awk '{p=$0"'$CP_SEP'"p;} END {print p
 CLASSPATH=$CLASSPATH$CP_SEP`find $APPS_HOME -name "*.jar" | awk '{p=$0"'$CP_SEP'"p;} END {print p}'`
 JAVA_OPTS="$JAVA_OPTS -Dzk_session_timeout=5000"
 
+CLASSPATH=${CLASSPATH}${CP_SEP}${CONF_LOC}
 if [ $REDBUTTON_MODE == "true" ] ; then
-    CLASSPATH=${CLASSPATH}${CP_SEP}${CONF_LOC}
     JAVA_OPTS="$JAVA_OPTS -Dcommlayer.mode=static"
+else
+    JAVA_OPTS="$JAVA_OPTS -Dcommlayer.mode=${COMMLAYER_MODE}"
 fi
 
 if [ "x$USER_CLASS_PATH" != "x" ] ; then
