@@ -387,10 +387,10 @@ public abstract class AbstractPE implements ProcessingElement {
 
     class OutputInvoker implements Runnable {
         public void run() {
-            synchronized (this) {
+            synchronized (AbstractPE.this) {
                 while (s4Clock == null) {
                     try {
-                        this.wait();
+                        AbstractPE.this.wait();
                     }
                     catch (InterruptedException ie) {}
                 }
