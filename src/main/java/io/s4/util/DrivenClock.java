@@ -23,6 +23,7 @@ import java.util.TreeMap;
 import java.util.Map.Entry;
 
 public class DrivenClock implements Clock {
+    
     private volatile long currentTime;
     private NavigableMap<Long, List<TimerRequest>> timerRequests = new TreeMap<Long, List<TimerRequest>>();
 
@@ -30,22 +31,21 @@ public class DrivenClock implements Clock {
         if (newCurrentTime < currentTime) {
             return;
         }
-        // race condition here, but it's OK
-        currentTime = newCurrentTime;
-
-        while (true) {
-            // inspect the top of the timer request list and see if any request
-            // is
-            // satisfied by the new current time
-            List<TimerRequest> relevantRequests = null;
-            synchronized (timerRequests) {
-                Entry<Long, List<TimerRequest>> entry = timerRequests.firstEntry();
+        List<TimerRequest> relevantRequests = null;
+        synchronized (timerRequests) {
+            currentTime = newCurrentTime;
+            while (true) {
+                // inspect the top of the timer request list and see if any
+                // request
+                // is
+                // satisfied by the new current time
+                Entry<Long, List<TimerRequest>> entry = timerRequests
+                        .firstEntry();
                 if (entry == null || entry.getKey() > newCurrentTime) {
                     break;
                 }
                 relevantRequests = timerRequests.remove(entry.getKey());
             }
-
             if (relevantRequests != null) {
                 for (TimerRequest timerRequest : relevantRequests) {
                     timerRequest.wakeUp(newCurrentTime);
@@ -55,12 +55,12 @@ public class DrivenClock implements Clock {
     }
 
     public long waitForTime(long targetTime) {
-        if (targetTime <= currentTime) {
-            return currentTime;
-        }
-
-        TimerRequest timerRequest = new TimerRequest(targetTime);
+        TimerRequest timerRequest = null;
         synchronized (timerRequests) {
+            if (targetTime <= currentTime) {
+                return currentTime;
+            }
+            timerRequest = new TimerRequest(targetTime);
             List<TimerRequest> requestsForTargetTime = timerRequests.get(targetTime);
             if (requestsForTargetTime == null) {
                 requestsForTargetTime = new ArrayList<TimerRequest>();
@@ -68,7 +68,6 @@ public class DrivenClock implements Clock {
             }
             requestsForTargetTime.add(timerRequest);
         }
-
         return timerRequest.waitForTargetTime();
     }
 
