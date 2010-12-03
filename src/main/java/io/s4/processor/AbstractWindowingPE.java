@@ -52,6 +52,10 @@ public abstract class AbstractWindowingPE extends AbstractPE {
     public void setWindowSize(int windowSize) {
         this.windowSize = windowSize;
     }
+    
+    public int getWindowSize() {
+        return windowSize;
+    }
 
     public void setTimestampFields(String[] timestampFieldsArray) {
         timestampFields = new HashMap<String, String>();
@@ -165,9 +169,24 @@ public abstract class AbstractWindowingPE extends AbstractPE {
         }
         return false;
     }
+    
+    public boolean isOutsideWindow(long time) {
+        Long slotIndexAtTime = slotUtils.getSlotAtTime(time/1000);
+        return slotUtils.isOutsideWindow(slotIndexAtTime, windowSize, getCurrentTime()/1000);
+    }
 
     public Long getSlotAtOffset(int offset) {
         return slotUtils.getSlot(offset, getCurrentTime() / 1000);
+    }
+    
+    public Slot getSlotAtTime(long time) {
+        pruneSlots(getCurrentTime()/1000);
+        Long slotIndex = slotUtils.getSlotAtTime(time/1000);
+        return slots.get(slotIndex);
+    }
+    
+    public Long getSlotTimeForTime(long time) {
+        return slotUtils.getSlotAtTime(time/1000);
     }
 
     public static interface Slot {
