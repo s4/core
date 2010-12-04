@@ -32,6 +32,7 @@ if [ "$1" == "-h" ]; then
   echo "  -z cluster manager address (hostname:port)" >&2
   echo "  -g cluster name" >&2
   echo "  -h help" >&2
+  echo "  -s seed time (event clock initialization time)" >&2
   exit 1
 fi
 BASE_DIR=`dirname $($READLINK -f $0)`
@@ -39,7 +40,8 @@ CORE_HOME=`$READLINK -f ${BASE_DIR}/../s4_core`
 APPS_HOME=`$READLINK -f ${BASE_DIR}/../s4_apps`
 EXTS_HOME=`$READLINK -f ${BASE_DIR}/../s4_exts`
 S4_CLOCK="wall"
-while getopts ":c:a:d:i:z:l:g:e:" opt;
+SEED_TIME="1234567890"
+while getopts ":c:a:d:i:z:l:g:e:s" opt;
 do  case "$opt" in
     c) CORE_HOME=$OPTARG;;
     a) APPS_HOME=$OPTARG;;
@@ -49,6 +51,7 @@ do  case "$opt" in
     l) LOCK_DIR=$OPTARG;;
     z) CLUSTER_MANAGER=$OPTARG;;
     g) CLUSTER_NAME=$OPTARG;;
+    s) SEED_TIME=$OPTARG;;
     \?)
       echo "Invalid option: -$OPTARG" >&2
       exit 1
@@ -176,7 +179,7 @@ CLASSPATH=$CLASSPATH$CP_SEP$TMP1$CP_SEP$CONF_LOC
 #STARTING S4 
 #---------------------------------------------
 
-CMD="${JAVA_LOC}java $GC_OPTS $DEBUG_OPTS $MEM_OPTS $JAVA_OPTS -classpath $CORE_HOME$CP_SEP$CLASSPATH -DDequeuerCount=6 -Dlog4j.configuration=file:${CONF_LOC}/log4j.xml io.s4.MainApp -c ${CORE_HOME} -a ${APPS_HOME} -e ${EXTS_HOME} -t ${CONF_TYPE} -d ${S4_CLOCK}"
+CMD="${JAVA_LOC}java $GC_OPTS $DEBUG_OPTS $MEM_OPTS $JAVA_OPTS -classpath $CORE_HOME$CP_SEP$CLASSPATH -DDequeuerCount=6 -Dlog4j.configuration=file:${CONF_LOC}/log4j.xml io.s4.MainApp -c ${CORE_HOME} -a ${APPS_HOME} -e ${EXTS_HOME} -t ${CONF_TYPE} -d ${S4_CLOCK} -s ${SEED_TIME}"
 echo "RUNNING $CMD"
 
 $CMD

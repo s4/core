@@ -51,9 +51,7 @@ public class EventClock extends DrivenClock {
                     throw new RuntimeException(e);
                 }
             }
-        } else {
-            updateTime(1);
-        }
+        } 
     }
 
     public void addEventClockStream(String streamName, String fieldName) {

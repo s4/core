@@ -18,6 +18,7 @@ package io.s4;
 import io.s4.processor.PEContainer;
 import io.s4.processor.ProcessingElement;
 import io.s4.util.Clock;
+import io.s4.util.EventClock;
 import io.s4.util.S4Util;
 import io.s4.util.Watcher;
 
@@ -64,6 +65,11 @@ public class MainApp {
                                        .withDescription("s4 clock")
                                        .create("d"));
 
+        options.addOption(OptionBuilder.withArgName("seedtime")
+                                       .hasArg()
+                                       .withDescription("event clock initialization time")
+                                       .create("s"));        
+        
         options.addOption(OptionBuilder.withArgName("extshome")
                                        .hasArg()
                                        .withDescription("extensions home")
@@ -120,6 +126,11 @@ public class MainApp {
         String configType = "typical";
         if (commandLine.hasOption("t")) {
             configType = commandLine.getOptionValue("t");
+        }
+        
+        int seedTime = 0;
+        if (commandLine.hasOption("s")) {
+            seedTime = Integer.parseInt(commandLine.getOptionValue("s"));
         }
 
         File coreHomeFile = new File(coreHome);
@@ -190,6 +201,13 @@ public class MainApp {
 
         coreContext = new FileSystemXmlApplicationContext(coreConfigFileUrls, coreContext);
         ApplicationContext context = coreContext;        
+        
+        Clock s4Clock = (Clock) context.getBean("clock");
+        if (s4Clock instanceof EventClock && seedTime > 0) {
+            EventClock s4EventClock = (EventClock)s4Clock;
+            s4EventClock.updateTime(seedTime);
+            System.out.println("Intializing event clock time with seed time " + s4EventClock.getCurrentTime());
+        }
         
         PEContainer peContainer = (PEContainer) context.getBean("peContainer");
 
