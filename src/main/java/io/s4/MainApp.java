@@ -128,9 +128,9 @@ public class MainApp {
             configType = commandLine.getOptionValue("t");
         }
         
-        int seedTime = 0;
+        long seedTime = 0;
         if (commandLine.hasOption("s")) {
-            seedTime = Integer.parseInt(commandLine.getOptionValue("s"));
+            seedTime = Long.parseLong(commandLine.getOptionValue("s"));
         }
 
         File coreHomeFile = new File(coreHome);
