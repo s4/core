@@ -16,7 +16,7 @@
 package io.s4.persist;
 
 import io.s4.processor.OutputFormatter;
-import io.s4.util.Clock;
+import io.s4.util.clock.Clock;
 
 import java.io.BufferedWriter;
 import java.io.File;

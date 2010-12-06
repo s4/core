@@ -18,7 +18,7 @@ package io.s4.processor;
 import io.s4.persist.ConMapPersister;
 import io.s4.persist.HashMapPersister;
 import io.s4.persist.Persister;
-import io.s4.util.Clock;
+import io.s4.util.clock.Clock;
 
 import java.lang.reflect.Method;
 import java.util.List;

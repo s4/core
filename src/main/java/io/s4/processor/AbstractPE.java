@@ -24,7 +24,7 @@ import io.s4.persist.Persister;
 import io.s4.schema.Schema;
 import io.s4.schema.SchemaContainer;
 import io.s4.schema.Schema.Property;
-import io.s4.util.Clock;
+import io.s4.util.clock.Clock;
 
 import java.util.ArrayList;
 import java.util.List;

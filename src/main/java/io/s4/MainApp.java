@@ -17,10 +17,10 @@ package io.s4;
 
 import io.s4.processor.PEContainer;
 import io.s4.processor.ProcessingElement;
-import io.s4.util.Clock;
-import io.s4.util.EventClock;
 import io.s4.util.S4Util;
 import io.s4.util.Watcher;
+import io.s4.util.clock.Clock;
+import io.s4.util.clock.EventClock;
 
 import java.io.File;
 import java.lang.reflect.Method;

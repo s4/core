@@ -15,7 +15,7 @@
  */
 package io.s4.persist;
 
-import io.s4.util.Clock;
+import io.s4.util.clock.Clock;
 
 import java.util.Map;
 import java.util.Set;

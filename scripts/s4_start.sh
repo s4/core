@@ -40,7 +40,7 @@ CORE_HOME=`$READLINK -f ${BASE_DIR}/../s4_core`
 APPS_HOME=`$READLINK -f ${BASE_DIR}/../s4_apps`
 EXTS_HOME=`$READLINK -f ${BASE_DIR}/../s4_exts`
 S4_CLOCK="wall"
-#SEED_TIME="1234567890"
+SEED_TIME="1234567890"
 while getopts ":c:a:d:i:z:l:g:e:s" opt;
 do  case "$opt" in
     c) CORE_HOME=$OPTARG;;

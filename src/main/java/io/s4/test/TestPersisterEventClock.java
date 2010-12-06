@@ -18,7 +18,7 @@ package io.s4.test;
 import io.s4.persist.ConMapPersister;
 import io.s4.persist.HashMapPersister;
 import io.s4.persist.Persister;
-import io.s4.util.EventClock;
+import io.s4.util.clock.EventClock;
 
 public class TestPersisterEventClock {
 
