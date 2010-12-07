@@ -18,6 +18,7 @@ package io.s4.processor;
 import io.s4.collector.Event;
 import io.s4.schema.Schema;
 import io.s4.schema.Schema.Property;
+import io.s4.util.S4Util;
 import io.s4.util.SlotUtils;
 
 import java.util.Collections;
@@ -92,7 +93,7 @@ public abstract class AbstractWindowingPE extends AbstractPE {
     }
 
     public void processEvent(Object event) {
-        long currentTime = System.currentTimeMillis();
+        long currentTime = getCurrentTime();
         long maybeCurrentTime = -1;
         if (timestampFields != null) {
             Schema schema = schemaContainer.getSchema(event.getClass());
