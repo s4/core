@@ -15,7 +15,6 @@
  */
 package io.s4.processor;
 
-import io.s4.collector.EventWrapper;
 import io.s4.dispatcher.partitioner.CompoundKeyInfo;
 import io.s4.dispatcher.partitioner.KeyInfo;
 import io.s4.dispatcher.partitioner.KeyInfo.KeyPathElement;
@@ -25,12 +24,10 @@ import io.s4.persist.Persister;
 import io.s4.schema.Schema;
 import io.s4.schema.SchemaContainer;
 import io.s4.schema.Schema.Property;
-import io.s4.util.DrivenClock;
+import io.s4.util.clock.Clock;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.Iterator;
 import java.util.StringTokenizer;
@@ -62,7 +59,7 @@ public abstract class AbstractPE implements ProcessingElement {
         }
     }
 
-    private DrivenClock drivenClock = new DrivenClock();
+    private Clock s4Clock;
     private int outputFrequency = 1;
     private FrequencyType outputFrequencyType = FrequencyType.EVENTCOUNT;
     private int outputFrequencyOffset = 0;
@@ -77,8 +74,7 @@ public abstract class AbstractPE implements ProcessingElement {
     private int outputsBeforePause = -1;
     private long pauseTimeInMillis;
     private boolean logPauses = false;
-    private Map<String, String> clockDriverFields;
-
+    
     public void setSaveKeyRecord(boolean saveKeyRecord) {
         this.saveKeyRecord = saveKeyRecord;
     }
@@ -94,15 +90,18 @@ public abstract class AbstractPE implements ProcessingElement {
     public void setLogPauses(boolean logPauses) {
         this.logPauses = logPauses;
     }
-
-    public void setClockDriverFields(String[] clockDriverFieldsArray) {
-        clockDriverFields = new HashMap<String, String>();
-        for (String clockDriverFieldInfo : clockDriverFieldsArray) {
-            StringTokenizer st = new StringTokenizer(clockDriverFieldInfo);
-            clockDriverFields.put(st.nextToken(), st.nextToken());
+    
+    public void setS4Clock(Clock s4Clock) {
+        synchronized (this) {
+            this.s4Clock = s4Clock;
+            this.notify();
         }
     }
 
+    public Clock getS4Clock() {
+        return s4Clock;
+    }
+    
     private OverloadDispatcher overloadDispatcher;
 
     public AbstractPE() {
@@ -129,28 +128,6 @@ public abstract class AbstractPE implements ProcessingElement {
 
         this.streamName = streamName;
 
-        if (clockDriverFields != null) {
-            Schema schema = schemaContainer.getSchema(event.getClass());
-            String fieldName = clockDriverFields.get(getStreamName());
-            long eventTime = -1;
-            if (fieldName != null) {
-                Property property = schema.getProperties().get(fieldName);
-                if (property != null
-                        && (property.getType().equals(Long.TYPE) || property.getType()
-                                                                            .equals(Long.class))) {
-                    try {
-                        eventTime = (Long) property.getGetterMethod()
-                                                   .invoke(event);
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            }
-
-            // update the clock
-            drivenClock.tick(eventTime);
-        }
-
         overloadDispatcher.dispatch(this, event);
 
         if (saveKeyRecord) {
@@ -173,11 +150,7 @@ public abstract class AbstractPE implements ProcessingElement {
     }
 
     public long getCurrentTime() {
-        if (clockDriverFields != null) {
-            return drivenClock.getCurrentTime();
-        } else {
-            return (System.currentTimeMillis());
-        }
+        return s4Clock.getCurrentTime();
     }
 
     /**
@@ -414,6 +387,14 @@ public abstract class AbstractPE implements ProcessingElement {
 
     class OutputInvoker implements Runnable {
         public void run() {
+            synchronized (AbstractPE.this) {
+                while (s4Clock == null) {
+                    try {
+                        AbstractPE.this.wait();
+                    }
+                    catch (InterruptedException ie) {}
+                }
+            }
             int outputCount = 0;
             long frequencyInMillis = outputFrequency * 1000;
 
@@ -422,23 +403,8 @@ public abstract class AbstractPE implements ProcessingElement {
                 long currentBoundary = (currentTime / frequencyInMillis)
                         * frequencyInMillis;
                 long nextBoundary = currentBoundary + frequencyInMillis;
-
-                if (clockDriverFields != null) {
-                    currentTime = drivenClock.waitForTime(nextBoundary
+                currentTime = s4Clock.waitForTime(nextBoundary
                             + (outputFrequencyOffset * 1000));
-                } else {
-                    long interval = (nextBoundary - getCurrentTime())
-                            + (outputFrequencyOffset * 1000);
-                    if (interval > 0) {
-                        try {
-                            Thread.sleep(interval);
-                        } catch (InterruptedException ie) {
-                            Thread.currentThread().interrupt();
-                        }
-                    }
-                    currentTime = getCurrentTime();
-                }
-
                 if (lookupTable != null) {
                     Set peKeys = lookupTable.keySet();
                     for (Iterator it = peKeys.iterator(); it.hasNext();) {
@@ -479,5 +445,5 @@ public abstract class AbstractPE implements ProcessingElement {
                 } // end if lookup table is not null
             }
         }
-    }
+    }    
 }

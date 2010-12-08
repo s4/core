@@ -15,6 +15,8 @@
  */
 package io.s4.persist;
 
+import io.s4.util.clock.Clock;
+
 import java.util.Map;
 import java.util.Set;
 import java.util.Enumeration;
@@ -30,6 +32,7 @@ public class ConMapPersister implements Persister {
     private int cleanWaitTime = 40; // 20 seconds by default
     private String loggerName = "s4";
     ConcurrentHashMap<String, CacheEntry> cache;
+    Clock s4Clock;
 
     private int startCapacity = 5000;
 
@@ -53,8 +56,15 @@ public class ConMapPersister implements Persister {
         this.loggerName = loggerName;
     }
 
+    public ConMapPersister(Clock s4Clock) {
+        this.s4Clock = s4Clock;
+    }
+    
+    public void setS4Clock(Clock s4Clock) {
+        this.s4Clock = s4Clock;
+    }
+    
     public ConMapPersister() {
-
     }
 
     public void init() {
@@ -104,7 +114,7 @@ public class ConMapPersister implements Persister {
         CacheEntry ce = new CacheEntry();
         ce.value = value;
         ce.period = period;
-        ce.addTime = System.currentTimeMillis();
+        ce.addTime = s4Clock.getCurrentTime();
         cache.put(key, ce);
     }
 
@@ -168,7 +178,7 @@ public class ConMapPersister implements Persister {
 
         public boolean isExpired() {
             if (period > 0) {
-                if ((addTime + (1000 * (long) period)) <= System.currentTimeMillis()) {
+                if ((addTime + (1000 * (long) period)) <= s4Clock.getCurrentTime()) {
                     return true;
                 }
             }

@@ -18,6 +18,7 @@ package io.s4.processor;
 import io.s4.persist.ConMapPersister;
 import io.s4.persist.HashMapPersister;
 import io.s4.persist.Persister;
+import io.s4.util.clock.Clock;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -34,24 +35,17 @@ public class PrototypeWrapper {
         return prototype.getId();
     }
 
-    public PrototypeWrapper(ProcessingElement prototype) {
+    public PrototypeWrapper(ProcessingElement prototype, Clock s4Clock) {
         this.prototype = prototype;
-        // lookupTable = new HashMapPersister();
-        lookupTable = new ConMapPersister();
+        lookupTable = new ConMapPersister(s4Clock);
         System.out.println("Using ConMapPersister ..");
         // this bit of reflection is not a performance issue because it is only
         // invoked at configuration time
         try {
-            // lookupTable.setSelfClean(true);
-            // lookupTable.init();
-            Method method;
-            method = lookupTable.getClass().getMethod("setSelfClean",
-                                                      boolean.class);
-            method.invoke(lookupTable, true);
-            method = lookupTable.getClass().getMethod("init");
-            method.invoke(lookupTable);
+            ((ConMapPersister)lookupTable).setSelfClean(true);
+            ((ConMapPersister)lookupTable).init();
             // set the persister in prototype
-            method = prototype.getClass().getMethod("setLookupTable",
+            Method method = prototype.getClass().getMethod("setLookupTable",
                                                     Persister.class);
             method.invoke(prototype, lookupTable);
         } catch (NoSuchMethodException e) {
