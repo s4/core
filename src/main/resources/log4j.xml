@@ -1,44 +1,40 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
-  <logger name="com.yahoo" additivity="false">
-        <level value="info"/>
-        <appender-ref ref="R"/>
-  </logger>
-  <logger name="s4" additivity="false">
-        <level value="info"/>
-        <appender-ref ref="R"/>
-  </logger>
-  <logger name="zk" additivity="false">
-        <level value="info"/>
-        <appender-ref ref="R"/>
-  </logger>
-  <logger name="dispatcher" additivity="false">
-        <level value="info"/>
-        <appender-ref ref="R"/>
-  </logger>
-  <logger name="monitor">
-        <level value="info"/>
-        <appender-ref ref="S"/>
-  </logger>
   <appender name="R" class="org.apache.log4j.DailyRollingFileAppender">
     <param name="File" value="${log_loc}/s4_core/s4_core_${instanceId}.log" />
-    <layout class="org.apache.log4j.PatternLayout"> 
-      <param name="ConversionPattern" value="%d %c %p (%F:%L) %m%n"/>
-    </layout> 
-  </appender> 
+    <layout class="org.apache.log4j.PatternLayout">
+      <param name="ConversionPattern" value="%d %c %p (%F:%L) %m%n" />
+    </layout>
+  </appender>
   <appender name="S" class="org.apache.log4j.DailyRollingFileAppender">
     <param name="File" value="${log_loc}/s4_core/s4_core_${instanceId}.mon" />
     <layout class="org.apache.log4j.PatternLayout">
-      <param name="ConversionPattern" value="%d %c %p (%F:%L) %m%n"/>
+      <param name="ConversionPattern" value="%d %c %p (%F:%L) %m%n" />
     </layout>
   </appender>
-  <root> 
-    <priority value ="info" /> 
-    <appender-ref ref="R" /> 
+  <logger name="com.yahoo" additivity="false">
+    <level value="info" />
+    <appender-ref ref="R" />
+  </logger>
+  <logger name="s4" additivity="false">
+    <level value="info" />
+    <appender-ref ref="R" />
+  </logger>
+  <logger name="zk" additivity="false">
+    <level value="info" />
+    <appender-ref ref="R" />
+  </logger>
+  <logger name="dispatcher" additivity="false">
+    <level value="info" />
+    <appender-ref ref="R" />
+  </logger>
+  <logger name="monitor">
+    <level value="info" />
+    <appender-ref ref="S" />
+  </logger>
+  <root>
+    <priority value="info" />
+    <appender-ref ref="R" />
   </root>
 </log4j:configuration>
-
-
-
-
