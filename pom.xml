@@ -58,14 +58,9 @@
       <version>1.2</version>
     </dependency>
     <dependency>
-      <groupId>commons-logging</groupId>
-      <artifactId>commons-logging</artifactId>
-      <version>1.1.1</version>
-    </dependency>
-    <dependency>
-      <groupId>commons-jexl</groupId>
+      <groupId>org.apache.commons</groupId>
       <artifactId>commons-jexl</artifactId>
-      <version>1.1</version>
+      <version>2.0.1</version>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
@@ -73,14 +68,9 @@
       <version>1.0.0</version>
     </dependency>
     <dependency>
-      <groupId>io.s4.comm</groupId>
-      <artifactId>comm</artifactId>
+      <groupId>io.s4</groupId>
+      <artifactId>s4.comm</artifactId>
       <version>0.2.1.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>zookeeper</artifactId>
-      <version>3.1.1</version>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
