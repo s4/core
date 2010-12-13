@@ -15,6 +15,11 @@
   </dependencySets> 
   <files>
     <file>
+      <source>${project.basedir}/NOTICE.txt</source>
+      <outputDirectory></outputDirectory>
+      <destName>NOTICE.txt</destName>
+    </file>
+    <file>
       <source>${project.basedir}/src/main/resources/s4_core_conf_typical.xml</source>
       <outputDirectory>s4_core/conf/typical</outputDirectory>
       <destName>s4_core_conf.xml</destName>
