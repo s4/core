@@ -18,6 +18,7 @@ package io.s4.processor;
 import io.s4.collector.Event;
 import io.s4.schema.Schema;
 import io.s4.schema.Schema.Property;
+import io.s4.util.S4Util;
 import io.s4.util.SlotUtils;
 
 import java.util.Collections;
@@ -51,6 +52,10 @@ public abstract class AbstractWindowingPE extends AbstractPE {
 
     public void setWindowSize(int windowSize) {
         this.windowSize = windowSize;
+    }
+    
+    public int getWindowSize() {
+        return windowSize;
     }
 
     public void setTimestampFields(String[] timestampFieldsArray) {
@@ -88,7 +93,7 @@ public abstract class AbstractWindowingPE extends AbstractPE {
     }
 
     public void processEvent(Object event) {
-        long currentTime = System.currentTimeMillis();
+        long currentTime = getCurrentTime();
         long maybeCurrentTime = -1;
         if (timestampFields != null) {
             Schema schema = schemaContainer.getSchema(event.getClass());
@@ -165,9 +170,24 @@ public abstract class AbstractWindowingPE extends AbstractPE {
         }
         return false;
     }
+    
+    public boolean isOutsideWindow(long time) {
+        Long slotIndexAtTime = slotUtils.getSlotAtTime(time/1000);
+        return slotUtils.isOutsideWindow(slotIndexAtTime, windowSize, getCurrentTime()/1000);
+    }
 
     public Long getSlotAtOffset(int offset) {
         return slotUtils.getSlot(offset, getCurrentTime() / 1000);
+    }
+    
+    public Slot getSlotAtTime(long time) {
+        pruneSlots(getCurrentTime()/1000);
+        Long slotIndex = slotUtils.getSlotAtTime(time/1000);
+        return slots.get(slotIndex);
+    }
+    
+    public Long getSlotTimeForTime(long time) {
+        return slotUtils.getSlotAtTime(time/1000);
     }
 
     public static interface Slot {

@@ -25,28 +25,33 @@ if [ "$1" == "-h" ]; then
   echo "Usage: $0" >&2
   echo "  -c s4 core home" >&2
   echo "  -a s4 applications home" >&2
+  echo "  -d s4 clock type" >&2
   echo "  -e s4 extensions home" >&2
   echo "  -l communications layer lock file base directory" >&2
   echo "  -i instance id (for log file names)" >&2
   echo "  -z cluster manager address (hostname:port)" >&2
   echo "  -g cluster name" >&2
   echo "  -h help" >&2
+  echo "  -s seed time (event clock initialization time)" >&2
   exit 1
 fi
 BASE_DIR=`dirname $($READLINK -f $0)`
 CORE_HOME=`$READLINK -f ${BASE_DIR}/../s4_core`
 APPS_HOME=`$READLINK -f ${BASE_DIR}/../s4_apps`
 EXTS_HOME=`$READLINK -f ${BASE_DIR}/../s4_exts`
-
-while getopts ":c:a:i:z:l:g:e:" opt;
+S4_CLOCK="wall"
+#SEED_TIME="1234567890"
+while getopts ":c:a:d:i:z:l:g:e:s" opt;
 do  case "$opt" in
     c) CORE_HOME=$OPTARG;;
     a) APPS_HOME=$OPTARG;;
+    d) S4_CLOCK=$OPTARG;;
     e) EXTS_HOME=$OPTARG;;
     i) INSTANCE_ID=$OPTARG;;
     l) LOCK_DIR=$OPTARG;;
     z) CLUSTER_MANAGER=$OPTARG;;
     g) CLUSTER_NAME=$OPTARG;;
+    s) SEED_TIME=$OPTARG;;
     \?)
       echo "Invalid option: -$OPTARG" >&2
       exit 1
@@ -71,6 +76,7 @@ LOG_LOC="${CORE_HOME}/logs"
 REMOTE_DEBUG_ENABLED="no"
 DEBUG_OPTS=""
 JAVA_OPTS=""
+S4_OPTS=""
 
 if [ "x$CLUSTER_MANAGER" == "x" ] ; then
     CLUSTER_MANAGER="localhost:2181"
@@ -80,6 +86,9 @@ if [ "x$CLUSTER_NAME" == "x" ] ; then
 fi
 if [ "x$LOCK_DIR" == "x" ] ; then
     LOCK_DIR="${CORE_HOME}/lock"
+fi
+if [ "x$SEED_TIME" != "x" ] ; then
+    S4_OPTS="-s ${SEED_TIME}"
 fi
 
 MKTEMP_ARGS=""
@@ -140,7 +149,6 @@ echo "EXTS_HOME='$EXTS_HOME'"
 echo "GC_OPTS='$GC_OPTS'"
 echo "MEM_OPTS='$MEM_OPTS'"
 echo "JAVA_OPTS='$JAVA_OPTS'"
-
 # figure out the location of the java command
 
 JAVA_LOC=""
@@ -175,7 +183,7 @@ CLASSPATH=$CLASSPATH$CP_SEP$TMP1$CP_SEP$CONF_LOC
 #STARTING S4 
 #---------------------------------------------
 
-CMD="${JAVA_LOC}java $GC_OPTS $DEBUG_OPTS $MEM_OPTS $JAVA_OPTS -classpath $CORE_HOME$CP_SEP$CLASSPATH -DDequeuerCount=6 -Dlog4j.configuration=file:${CONF_LOC}/log4j.xml io.s4.MainApp -c ${CORE_HOME} -a ${APPS_HOME} -e ${EXTS_HOME} -t ${CONF_TYPE}"
+CMD="${JAVA_LOC}java $GC_OPTS $DEBUG_OPTS $MEM_OPTS $JAVA_OPTS -classpath $CORE_HOME$CP_SEP$CLASSPATH -DDequeuerCount=6 -Dlog4j.configuration=file:${CONF_LOC}/log4j.xml io.s4.MainApp -c ${CORE_HOME} -a ${APPS_HOME} -e ${EXTS_HOME} -t ${CONF_TYPE} -d ${S4_CLOCK} $S4_OPTS"
 echo "RUNNING $CMD"
 
 $CMD

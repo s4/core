@@ -16,6 +16,7 @@
 package io.s4.persist;
 
 import io.s4.processor.OutputFormatter;
+import io.s4.util.clock.Clock;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -33,6 +34,15 @@ import java.util.regex.Pattern;
 import org.apache.log4j.Logger;
 
 public class DumpingPersister extends ConMapPersister implements Runnable {
+    
+    public DumpingPersister() {       
+    }
+    
+    public DumpingPersister(Clock s4Clock) {
+        super(s4Clock);
+        // TODO Auto-generated constructor stub
+    }
+
     private String dumpFilePrefix;
     private Map<String, OutputFormatter> regexFormatter;
     private Pattern[] patterns;

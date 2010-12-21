@@ -19,8 +19,11 @@ import io.s4.processor.PEContainer;
 import io.s4.processor.ProcessingElement;
 import io.s4.util.S4Util;
 import io.s4.util.Watcher;
+import io.s4.util.clock.Clock;
+import io.s4.util.clock.EventClock;
 
 import java.io.File;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -36,6 +39,7 @@ import org.apache.commons.cli.ParseException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 import org.springframework.core.io.ClassPathResource;
+
 
 public class MainApp {
 
@@ -56,6 +60,16 @@ public class MainApp {
                                        .withDescription("applications home")
                                        .create("a"));
 
+        options.addOption(OptionBuilder.withArgName("s4clock")
+                                       .hasArg()
+                                       .withDescription("s4 clock")
+                                       .create("d"));
+
+        options.addOption(OptionBuilder.withArgName("seedtime")
+                                       .hasArg()
+                                       .withDescription("event clock initialization time")
+                                       .create("s"));        
+        
         options.addOption(OptionBuilder.withArgName("extshome")
                                        .hasArg()
                                        .withDescription("extensions home")
@@ -73,6 +87,7 @@ public class MainApp {
 
         CommandLineParser parser = new GnuParser();
         CommandLine commandLine = null;
+        String clockType = "wall";
 
         try {
             commandLine = parser.parse(options, args);
@@ -99,6 +114,10 @@ public class MainApp {
         if (commandLine.hasOption("a")) {
             appsHome = commandLine.getOptionValue("a");
         }
+        
+        if (commandLine.hasOption("d")) {
+            clockType = commandLine.getOptionValue("d");
+        }
 
         if (commandLine.hasOption("e")) {
             extsHome = commandLine.getOptionValue("e");
@@ -107,6 +126,11 @@ public class MainApp {
         String configType = "typical";
         if (commandLine.hasOption("t")) {
             configType = commandLine.getOptionValue("t");
+        }
+        
+        long seedTime = 0;
+        if (commandLine.hasOption("s")) {
+            seedTime = Long.parseLong(commandLine.getOptionValue("s"));
         }
 
         File coreHomeFile = new File(coreHome);
@@ -146,27 +170,51 @@ public class MainApp {
             System.exit(1);
         }
 
+        ApplicationContext coreContext = null;
         String configBase = coreHome + File.separatorChar + "conf"
                 + File.separatorChar + configType;
-        String configPath = configBase + File.separatorChar
-                + "s4_core_conf.xml";
-        File configFile = new File(configPath);
-        if (!configFile.exists()) {
-            System.err.printf("S4 core config file %s does not exist\n",
-                              configPath);
-            System.exit(1);
-        }
+        String configPath = "";
+        List<String> coreConfigUrls = new ArrayList<String>(); 
+        File configFile = null;
+
+        // load clock configuration
+        configPath = configBase + File.separatorChar + clockType + "_clock.xml";            
+        coreConfigUrls.add(configPath);
 
         // load core config xml
-        ApplicationContext coreContext;
-        coreContext = new FileSystemXmlApplicationContext("file:" + configPath);
-        ApplicationContext context = coreContext;
+        configPath = configBase + File.separatorChar + "s4_core_conf.xml";
+        configFile = new File(configPath);
+        if (!configFile.exists()) {
+            System.err.printf("S4 core config file %s does not exist\n",
+                    configPath);
+            System.exit(1);
+        }
+		
+        coreConfigUrls.add(configPath);
+        String[] coreConfigFiles = new String[coreConfigUrls.size()];
+        coreConfigUrls.toArray(coreConfigFiles);
 
+        String[] coreConfigFileUrls = new String[coreConfigFiles.length];
+        for (int i = 0; i < coreConfigFiles.length; i++) {
+            coreConfigFileUrls[i] = "file:" + coreConfigFiles[i];
+        }
+
+        coreContext = new FileSystemXmlApplicationContext(coreConfigFileUrls, coreContext);
+        ApplicationContext context = coreContext;        
+        
+        Clock s4Clock = (Clock) context.getBean("clock");
+        if (s4Clock instanceof EventClock && seedTime > 0) {
+            EventClock s4EventClock = (EventClock)s4Clock;
+            s4EventClock.updateTime(seedTime);
+            System.out.println("Intializing event clock time with seed time " + s4EventClock.getCurrentTime());
+        }
+        
         PEContainer peContainer = (PEContainer) context.getBean("peContainer");
 
         Watcher w = (Watcher) context.getBean("watcher");
         w.setConfigFilename(configPath);
 
+        
         // load extension modules
         String[] configFileNames = getModuleConfigFiles(extsHome, prop);
         if (configFileNames.length > 0) {
@@ -187,18 +235,30 @@ public class MainApp {
             }
             context = new FileSystemXmlApplicationContext(configFileUrls,
                                                           context);
-
             // attach any beans that implement ProcessingElement to the PE
             // Container
             String[] processingElementBeanNames = context.getBeanNamesForType(ProcessingElement.class);
             for (String processingElementBeanName : processingElementBeanNames) {
                 Object bean = context.getBean(processingElementBeanName);
+                try {
+                    Method getS4ClockMethod = bean.getClass().getMethod("getS4Clock");
+    
+                    if (getS4ClockMethod.getReturnType().equals(Clock.class)) {
+                        if (getS4ClockMethod.invoke(bean) == null) {
+                            Method setS4ClockMethod = bean.getClass().getMethod("setS4Clock", Clock.class);
+                            setS4ClockMethod.invoke(bean, coreContext.getBean("clock"));
+                        }
+                    }
+                }
+                catch (NoSuchMethodException mnfe) {
+                    // acceptable
+                }
                 System.out.println("Adding processing element with bean name "
                         + processingElementBeanName + ", id "
                         + ((ProcessingElement) bean).getId());
                 peContainer.addProcessor((ProcessingElement) bean);
             }
-        }
+        }  
     }
 
     /**
@@ -228,5 +288,5 @@ public class MainApp {
         configFileList.toArray(ret);
         System.out.println(Arrays.toString(ret));
         return ret;
-    }
+    }    
 }

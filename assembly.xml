@@ -15,9 +15,24 @@
   </dependencySets> 
   <files>
     <file>
+      <source>${project.basedir}/NOTICE.txt</source>
+      <outputDirectory></outputDirectory>
+      <destName>NOTICE.txt</destName>
+    </file>
+    <file>
       <source>${project.basedir}/src/main/resources/s4_core_conf_typical.xml</source>
       <outputDirectory>s4_core/conf/typical</outputDirectory>
       <destName>s4_core_conf.xml</destName>
+    </file>
+    <file>
+      <source>${project.basedir}/src/main/resources/wall_clock.xml</source>
+      <outputDirectory>s4_core/conf/typical</outputDirectory>
+      <destName>wall_clock.xml</destName>
+    </file>
+    <file>
+      <source>${project.basedir}/src/main/resources/event_clock.xml</source>
+      <outputDirectory>s4_core/conf/typical</outputDirectory>
+      <destName>event_clock.xml</destName>
     </file>
     <file>
       <source>${project.basedir}/src/main/resources/s4_core.properties_header_typical</source>
@@ -28,6 +43,16 @@
       <source>${project.basedir}/src/main/resources/s4_core_conf_typical.xml</source>
       <outputDirectory>s4_core/conf/redbutton</outputDirectory>
       <destName>s4_core_conf.xml</destName>
+    </file>
+    <file>
+      <source>${project.basedir}/src/main/resources/wall_clock.xml</source>
+      <outputDirectory>s4_core/conf/redbutton</outputDirectory>
+      <destName>wall_clock.xml</destName>
+    </file>
+    <file>
+      <source>${project.basedir}/src/main/resources/event_clock.xml</source>
+      <outputDirectory>s4_core/conf/redbutton</outputDirectory>
+      <destName>event_clock.xml</destName>
     </file>
     <file>
       <source>${project.basedir}/src/main/resources/s4_core.properties_header_redbutton</source>
@@ -89,7 +114,7 @@
       </excludes>
     </fileSet>
     <fileSet>
-      <directory>${project.basedir}</directory>
+      <directory>${project.basedir}/</directory>
       <outputDirectory>s4_apps</outputDirectory>
       <excludes>
         <exclude>**/*</exclude>
