@@ -41,7 +41,7 @@ APPS_HOME=`$READLINK -f ${BASE_DIR}/../s4_apps`
 EXTS_HOME=`$READLINK -f ${BASE_DIR}/../s4_exts`
 S4_CLOCK="wall"
 #SEED_TIME="1234567890"
-while getopts ":c:a:d:i:z:l:g:e:s" opt;
+while getopts ":c:a:d:i:z:l:g:e:s:j:" opt;
 do  case "$opt" in
     c) CORE_HOME=$OPTARG;;
     a) APPS_HOME=$OPTARG;;
@@ -52,6 +52,7 @@ do  case "$opt" in
     z) CLUSTER_MANAGER=$OPTARG;;
     g) CLUSTER_NAME=$OPTARG;;
     s) SEED_TIME=$OPTARG;;
+    j) EXTRA_JAVA_OPTS=$OPTARG;;
     \?)
       echo "Invalid option: -$OPTARG" >&2
       exit 1
@@ -141,6 +142,11 @@ if [ "x$LOCK_DIR" != "x" ] ; then
   JAVA_OPTS="$JAVA_OPTS -Dlock_dir=$LOCK_DIR "
 fi
 
+if [ "x$EXTRA_JAVA_OPTS" != "x" ] ; then
+  BLIP=`eval echo ${EXTRA_JAVA_OPTS}`
+  JAVA_OPTS="$JAVA_OPTS $BLIP"
+fi
+
 JAVA_OPTS="$JAVA_OPTS -Dlog_loc=${LOG_LOC} "
 
 echo "CORE_HOME='$CORE_HOME'"
@@ -186,4 +192,4 @@ CLASSPATH=$CLASSPATH$CP_SEP$TMP1$CP_SEP$CONF_LOC
 CMD="${JAVA_LOC}java $GC_OPTS $DEBUG_OPTS $MEM_OPTS $JAVA_OPTS -classpath $CORE_HOME$CP_SEP$CLASSPATH -DDequeuerCount=6 -Dlog4j.configuration=file:${CONF_LOC}/log4j.xml io.s4.MainApp -c ${CORE_HOME} -a ${APPS_HOME} -e ${EXTS_HOME} -t ${CONF_TYPE} -d ${S4_CLOCK} $S4_OPTS"
 echo "RUNNING $CMD"
 
-$CMD
+exec ${CMD}
