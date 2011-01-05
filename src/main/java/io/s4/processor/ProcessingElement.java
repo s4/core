@@ -29,4 +29,6 @@ public interface ProcessingElement extends Cloneable {
     public Object clone();
 
     public String getId();
+    
+    public String getInitMethod();
 }
