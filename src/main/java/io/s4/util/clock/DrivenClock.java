@@ -19,9 +19,9 @@ package io.s4.util.clock;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.TreeMap;
-import java.util.Map.Entry;
 
 public class DrivenClock implements Clock {
     

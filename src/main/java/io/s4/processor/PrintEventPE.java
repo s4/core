@@ -15,15 +15,6 @@
  */
 package io.s4.processor;
 
-import io.s4.collector.Event;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.log4j.Logger;
 
 public class PrintEventPE extends AbstractPE {

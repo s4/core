@@ -17,10 +17,10 @@ package io.s4.persist;
 
 import io.s4.util.clock.Clock;
 
-import java.util.Map;
-import java.util.Set;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 

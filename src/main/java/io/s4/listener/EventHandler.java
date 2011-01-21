@@ -17,8 +17,6 @@ package io.s4.listener;
 
 import io.s4.collector.EventWrapper;
 
-import java.util.Map;
-
 public interface EventHandler {
     void processEvent(EventWrapper eventWrapper);
 }

@@ -18,8 +18,8 @@ package io.s4.util.clock;
 
 import io.s4.collector.EventWrapper;
 import io.s4.schema.Schema;
-import io.s4.schema.SchemaContainer;
 import io.s4.schema.Schema.Property;
+import io.s4.schema.SchemaContainer;
 
 import java.util.HashMap;
 import java.util.Map;

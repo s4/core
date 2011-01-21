@@ -16,8 +16,8 @@
 package io.s4.dispatcher.partitioner;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 public class KeyInfo implements Serializable {
     List<KeyPathElement> keyPath = new ArrayList<KeyPathElement>();

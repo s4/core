@@ -17,15 +17,12 @@ package io.s4.schema;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
 import java.io.FileReader;
-import java.util.HashMap;
+import java.io.IOException;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
-import org.springframework.core.io.ClassPathResource;
 
 public class SchemaManager {
     protected Map<String, String> schemaStringMap = new ConcurrentHashMap<String, String>();

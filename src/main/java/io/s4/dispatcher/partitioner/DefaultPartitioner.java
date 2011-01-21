@@ -27,8 +27,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import org.springframework.util.StringUtils;
-
 public class DefaultPartitioner implements Partitioner, VariableKeyPartitioner {
     private List<List<String>> keyNameTuple = new ArrayList<List<String>>();
     private boolean debug = false;

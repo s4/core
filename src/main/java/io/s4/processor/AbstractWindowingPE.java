@@ -15,10 +15,8 @@
  */
 package io.s4.processor;
 
-import io.s4.collector.Event;
 import io.s4.schema.Schema;
 import io.s4.schema.Schema.Property;
-import io.s4.util.S4Util;
 import io.s4.util.SlotUtils;
 
 import java.util.Collections;

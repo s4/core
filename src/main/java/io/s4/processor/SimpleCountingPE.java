@@ -15,7 +15,6 @@
  */
 package io.s4.processor;
 
-import io.s4.collector.Event;
 import io.s4.persist.Persister;
 
 import java.util.List;

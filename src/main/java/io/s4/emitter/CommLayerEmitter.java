@@ -23,7 +23,6 @@ import static io.s4.util.MetricsName.low_level_emitter_qsz;
 import io.s4.collector.EventWrapper;
 import io.s4.comm.core.SenderProcess;
 import io.s4.comm.core.Serializer;
-import io.s4.comm.util.ConfigParser.Cluster.ClusterType;
 import io.s4.listener.CommLayerListener;
 import io.s4.logger.Monitor;
 import io.s4.message.Request;

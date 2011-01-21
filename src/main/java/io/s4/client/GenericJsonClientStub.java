@@ -15,10 +15,10 @@
  */
 package io.s4.client;
 
-import java.lang.reflect.Type;
-
 import io.s4.client.util.ObjectBuilder;
 import io.s4.collector.EventWrapper;
+
+import java.lang.reflect.Type;
 
 import org.json.JSONArray;
 import org.json.JSONException;

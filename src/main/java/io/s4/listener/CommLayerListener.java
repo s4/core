@@ -26,7 +26,6 @@ import io.s4.comm.core.CommEventCallback;
 import io.s4.comm.core.CommLayerState;
 import io.s4.comm.core.Deserializer;
 import io.s4.comm.core.ListenerProcess;
-import io.s4.comm.util.ConfigParser.Cluster.ClusterType;
 import io.s4.logger.Monitor;
 import io.s4.serialize.SerializerDeserializer;
 

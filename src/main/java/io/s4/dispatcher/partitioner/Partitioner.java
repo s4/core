@@ -15,7 +15,6 @@
  */
 package io.s4.dispatcher.partitioner;
 
-import java.util.Map;
 import java.util.List;
 
 public interface Partitioner {
