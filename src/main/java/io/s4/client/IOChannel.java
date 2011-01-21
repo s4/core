@@ -13,11 +13,12 @@
  * language governing permissions and limitations under the
  * License. See accompanying LICENSE file. 
  */
-package io.s4.listener;
+package io.s4.client;
 
-public interface EventListener extends EventProducer {
+import java.io.IOException;
 
-    int getId();
+public interface IOChannel {
+    byte[] recv() throws IOException;
 
-    String getAppName();
+    void send(byte[] v) throws IOException;
 }

@@ -22,14 +22,14 @@ import io.s4.dispatcher.partitioner.KeyInfo.KeyPathElementIndex;
 import io.s4.dispatcher.partitioner.KeyInfo.KeyPathElementName;
 import io.s4.persist.Persister;
 import io.s4.schema.Schema;
-import io.s4.schema.SchemaContainer;
 import io.s4.schema.Schema.Property;
+import io.s4.schema.SchemaContainer;
 import io.s4.util.clock.Clock;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.Iterator;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
@@ -69,12 +69,13 @@ public abstract class AbstractPE implements ProcessingElement {
     private List<EventAdvice> eventAdviceList = new ArrayList<EventAdvice>();
     private List<Object> keyValue;
     private List<Object> keyRecord;
+    private String keyValueString;
     private String streamName;
     private boolean saveKeyRecord = false;
     private int outputsBeforePause = -1;
     private long pauseTimeInMillis;
     private boolean logPauses = false;
-    
+
     public void setSaveKeyRecord(boolean saveKeyRecord) {
         this.saveKeyRecord = saveKeyRecord;
     }
@@ -90,7 +91,7 @@ public abstract class AbstractPE implements ProcessingElement {
     public void setLogPauses(boolean logPauses) {
         this.logPauses = logPauses;
     }
-    
+
     public void setS4Clock(Clock s4Clock) {
         synchronized (this) {
             this.s4Clock = s4Clock;
@@ -101,7 +102,7 @@ public abstract class AbstractPE implements ProcessingElement {
     public Clock getS4Clock() {
         return s4Clock;
     }
-    
+
     private OverloadDispatcher overloadDispatcher;
 
     public AbstractPE() {
@@ -120,10 +121,14 @@ public abstract class AbstractPE implements ProcessingElement {
      * {@link ProcessingElement} interface. You should not override this method.
      * Instead, you need to implement the <code>processEvent</code> method.
      **/
-    public void execute(String streamName, CompoundKeyInfo compoundKeyInfo, Object event) {
+    public void execute(String streamName, CompoundKeyInfo compoundKeyInfo,
+                        Object event) {
         // if this is the first time through, get the key for this PE
         if (keyValue == null || saveKeyRecord) {
             setKeyValue(event, compoundKeyInfo);
+
+            if (compoundKeyInfo != null)
+                keyValueString = compoundKeyInfo.getCompoundValue();
         }
 
         this.streamName = streamName;
@@ -168,6 +173,10 @@ public abstract class AbstractPE implements ProcessingElement {
 
     public List<Object> getKeyRecord() {
         return keyRecord;
+    }
+
+    public String getKeyValueString() {
+        return keyValueString;
     }
 
     public String getStreamName() {
@@ -391,8 +400,8 @@ public abstract class AbstractPE implements ProcessingElement {
                 while (s4Clock == null) {
                     try {
                         AbstractPE.this.wait();
+                    } catch (InterruptedException ie) {
                     }
-                    catch (InterruptedException ie) {}
                 }
             }
             int outputCount = 0;
@@ -404,7 +413,7 @@ public abstract class AbstractPE implements ProcessingElement {
                         * frequencyInMillis;
                 long nextBoundary = currentBoundary + frequencyInMillis;
                 currentTime = s4Clock.waitForTime(nextBoundary
-                            + (outputFrequencyOffset * 1000));
+                        + (outputFrequencyOffset * 1000));
                 if (lookupTable != null) {
                     Set peKeys = lookupTable.keySet();
                     for (Iterator it = peKeys.iterator(); it.hasNext();) {
@@ -445,5 +454,5 @@ public abstract class AbstractPE implements ProcessingElement {
                 } // end if lookup table is not null
             }
         }
-    }    
+    }
 }

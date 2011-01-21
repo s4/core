@@ -13,11 +13,12 @@
  * language governing permissions and limitations under the
  * License. See accompanying LICENSE file. 
  */
-package io.s4.listener;
+package io.s4.dispatcher.partitioner;
 
-public interface EventListener extends EventProducer {
+import java.util.List;
 
-    int getId();
-
-    String getAppName();
+public interface VariableKeyPartitioner {
+    public List<CompoundKeyInfo> partition(String streamName,
+                                           List<List<String>> keyNames,
+                                           Object event, int partitionCount);
 }

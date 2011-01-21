@@ -30,6 +30,7 @@ if [ "$1" == "-h" ]; then
   echo "  -l communications layer lock file base directory" >&2
   echo "  -i instance id (for log file names)" >&2
   echo "  -z cluster manager address (hostname:port)" >&2
+  echo "  -r adapter cluster name" >&2
   echo "  -g cluster name" >&2
   echo "  -h help" >&2
   echo "  -s seed time (event clock initialization time)" >&2
@@ -41,7 +42,7 @@ APPS_HOME=`$READLINK -f ${BASE_DIR}/../s4_apps`
 EXTS_HOME=`$READLINK -f ${BASE_DIR}/../s4_exts`
 S4_CLOCK="wall"
 #SEED_TIME="1234567890"
-while getopts ":c:a:d:i:z:l:g:e:s:j:" opt;
+while getopts ":c:a:d:i:z:l:g:e:r:s:j:" opt;
 do  case "$opt" in
     c) CORE_HOME=$OPTARG;;
     a) APPS_HOME=$OPTARG;;
@@ -51,6 +52,7 @@ do  case "$opt" in
     l) LOCK_DIR=$OPTARG;;
     z) CLUSTER_MANAGER=$OPTARG;;
     g) CLUSTER_NAME=$OPTARG;;
+    r) ADAPTER_CLUSTER_NAME=$OPTARG;;
     s) SEED_TIME=$OPTARG;;
     j) EXTRA_JAVA_OPTS=$OPTARG;;
     \?)
@@ -85,6 +87,9 @@ fi
 if [ "x$CLUSTER_NAME" == "x" ] ; then
     CLUSTER_NAME="s4"
 fi
+if [ "x$ADAPTER_CLUSTER_NAME" == "x" ] ; then
+    ADAPTER_CLUSTER_NAME=$CLUSTER_NAME
+fi
 if [ "x$LOCK_DIR" == "x" ] ; then
     LOCK_DIR="${CORE_HOME}/lock"
 fi
@@ -106,6 +111,7 @@ cat $CONF_LOC/s4_core.properties_header > $TMP1/s4_core.properties
 echo "zk_address=${CLUSTER_MANAGER}" >> $TMP1/s4_core.properties
 echo "commlayer_mode=dynamic" >> $TMP1/s4_core.properties
 echo "s4_app_name=${CLUSTER_NAME}" >> $TMP1/s4_core.properties
+echo "adapter_app_name=${ADAPTER_CLUSTER_NAME}" >> $TMP1/s4_core.properties
 
 #---------------------------------------------
 #Setting Prefix and classpath separator to handle windows:-)

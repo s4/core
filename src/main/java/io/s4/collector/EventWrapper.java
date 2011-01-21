@@ -19,9 +19,11 @@ import io.s4.dispatcher.partitioner.CompoundKeyInfo;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
 
 public class EventWrapper {
-    private List<CompoundKeyInfo> compoundKeys = new ArrayList<CompoundKeyInfo>();
+    private List<CompoundKeyInfo> compoundKeys = null;
+    private List<List<String>> compoundKeyNames = null;
     private Object event;
     private String streamName;
 
@@ -37,8 +39,12 @@ public class EventWrapper {
         return streamName;
     }
 
-    public EventWrapper() {
+    public List<List<String>> getCompoundKeyNames() {
+        return compoundKeyNames;
+    }
 
+    public EventWrapper() {
+        compoundKeys = new ArrayList<CompoundKeyInfo>();
     }
 
     public EventWrapper(String streamName, Object event,
@@ -46,5 +52,29 @@ public class EventWrapper {
         this.streamName = streamName;
         this.event = event;
         this.compoundKeys = compoundKeys;
+    }
+
+    public EventWrapper(String streamName, String[] compoundKeyStrings,
+            Object event) {
+        this.streamName = streamName;
+        this.event = event;
+
+        if (compoundKeyStrings != null) {
+            this.compoundKeyNames = new ArrayList<List<String>>(compoundKeyStrings.length);
+
+            for (String keyAsString : compoundKeyStrings) {
+                List<String> keyNameElements = new ArrayList<String>();
+                StringTokenizer st = new StringTokenizer(keyAsString, "/");
+                while (st.hasMoreTokens()) {
+                    keyNameElements.add(st.nextToken());
+                }
+                compoundKeyNames.add(keyNameElements);
+            }
+        }
+    }
+
+    public String toString() {
+        return "stream:" + getStreamName() + " keys:" + getCompoundKeys()
+                + " keyNames:" + getCompoundKeyNames() + " event:" + getEvent();
     }
 }

@@ -13,11 +13,16 @@
  * language governing permissions and limitations under the
  * License. See accompanying LICENSE file. 
  */
-package io.s4.listener;
+package io.s4.processor;
 
-public interface EventListener extends EventProducer {
+import io.s4.collector.EventWrapper;
 
-    int getId();
+public interface AsynchronousEventProcessor {
 
-    String getAppName();
+    void queueWork(EventWrapper eventWrapper);
+
+    // This will always be called by a different thread than the one executing
+    // run()
+    int getQueueSize();
+
 }

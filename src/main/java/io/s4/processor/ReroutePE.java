@@ -15,24 +15,19 @@
  */
 package io.s4.processor;
 
-import io.s4.collector.Event;
-import io.s4.dispatcher.Dispatcher;
-import io.s4.dispatcher.partitioner.CompoundKeyInfo;
+import io.s4.dispatcher.EventDispatcher;
 import io.s4.dispatcher.transformer.Transformer;
 import io.s4.util.Cloner;
 import io.s4.util.ClonerGenerator;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.StringTokenizer;
-import java.util.List;
-import java.util.ArrayList;
 
 import org.apache.log4j.Logger;
 
 public class ReroutePE extends AbstractPE {
     private static Logger logger = Logger.getLogger(ReroutePE.class);
-    private Dispatcher dispatcher;
+    private EventDispatcher dispatcher;
     private Transformer[] transformers = new Transformer[0];
     // private List<EventAdvice> keys;
     private String id = "ReroutePE";
@@ -46,7 +41,7 @@ public class ReroutePE extends AbstractPE {
         this.id = id;
     }
 
-    public void setDispatcher(Dispatcher dispatcher) {
+    public void setDispatcher(EventDispatcher dispatcher) {
         this.dispatcher = dispatcher;
     }
 

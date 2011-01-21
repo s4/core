@@ -17,22 +17,20 @@ package io.s4.dispatcher;
 
 import io.s4.collector.EventWrapper;
 import io.s4.dispatcher.partitioner.CompoundKeyInfo;
-import io.s4.dispatcher.partitioner.KeyInfo;
 import io.s4.dispatcher.partitioner.Partitioner;
+import io.s4.dispatcher.partitioner.VariableKeyPartitioner;
 import io.s4.dispatcher.transformer.Transformer;
 import io.s4.emitter.EventEmitter;
 
 import java.io.File;
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.HashMap;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-public class Dispatcher {
+public class Dispatcher implements EventDispatcher {
     private EventEmitter eventEmitter;
     private Transformer[] transformers = new Transformer[0];
     private Partitioner[] partitioners = new Partitioner[0];
@@ -142,7 +140,20 @@ public class Dispatcher {
         t.start();
     }
 
+    @Override
+    public void dispatchEvent(String streamName,
+                              List<List<String>> compoundKeyNames, Object event) {
+        dispatchEvent(streamName, event, true, compoundKeyNames);
+    }
+
+    @Override
     public void dispatchEvent(String streamName, Object event) {
+        dispatchEvent(streamName, event, false, null);
+    }
+
+    private void dispatchEvent(String streamName, Object event,
+                               boolean variableKey,
+                               List<List<String>> compoundKeyNames) {
         synchronized (this) {
             rawEventCount++;
         }
@@ -161,9 +172,22 @@ public class Dispatcher {
 
             List<CompoundKeyInfo> partionInfoList = new ArrayList<CompoundKeyInfo>();
             for (Partitioner partitioner : partitioners) {
-                List<CompoundKeyInfo> pInfoList = partitioner.partition(streamName,
-                                                                        event,
-                                                                        eventEmitter.getNodeCount());
+                List<CompoundKeyInfo> pInfoList = null;
+
+                if (!variableKey) {
+                    pInfoList = partitioner.partition(streamName,
+                                                      event,
+                                                      eventEmitter.getNodeCount());
+                } else {
+                    if (partitioner instanceof VariableKeyPartitioner) {
+                        VariableKeyPartitioner vp = (VariableKeyPartitioner) partitioner;
+                        pInfoList = vp.partition(streamName,
+                                                 compoundKeyNames,
+                                                 event,
+                                                 eventEmitter.getNodeCount());
+                    }
+                }
+
                 if (pInfoList != null) {
                     partionInfoList.addAll(pInfoList);
                 }
@@ -195,4 +219,5 @@ public class Dispatcher {
                          e);
         }
     }
+
 }

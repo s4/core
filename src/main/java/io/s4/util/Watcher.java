@@ -15,23 +15,24 @@
  */
 package io.s4.util;
 
+import static io.s4.util.MetricsName.S4_CORE_METRICS;
+import static io.s4.util.MetricsName.s4_core_exit_ct;
+import static io.s4.util.MetricsName.s4_core_free_mem;
 import io.s4.logger.Monitor;
 import io.s4.persist.Persister;
-import io.s4.processor.PEContainer;
+import io.s4.processor.AsynchronousEventProcessor;
 
-import java.text.SimpleDateFormat;
-import java.text.MessageFormat;
 import java.io.File;
-import java.util.Date;
+import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 import org.apache.log4j.Logger;
 
-import static io.s4.util.MetricsName.*;
-
 public class Watcher implements Runnable {
     Runtime rt = Runtime.getRuntime();
-    PEContainer peContainer;
+    AsynchronousEventProcessor peContainer;
     Persister persister;
     Persister localPersister;
     String configFilename;
@@ -50,7 +51,7 @@ public class Watcher implements Runnable {
         this.minimumMemory = minimumMemory;
     }
 
-    public void setPeContainer(PEContainer peContainer) {
+    public void setPeContainer(AsynchronousEventProcessor peContainer) {
         this.peContainer = peContainer;
     }
 

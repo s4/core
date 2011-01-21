@@ -16,7 +16,6 @@
 package io.s4.processor;
 
 import io.s4.persist.ConMapPersister;
-import io.s4.persist.HashMapPersister;
 import io.s4.persist.Persister;
 import io.s4.util.clock.Clock;
 
@@ -42,11 +41,11 @@ public class PrototypeWrapper {
         // this bit of reflection is not a performance issue because it is only
         // invoked at configuration time
         try {
-            ((ConMapPersister)lookupTable).setSelfClean(true);
-            ((ConMapPersister)lookupTable).init();
+            ((ConMapPersister) lookupTable).setSelfClean(true);
+            ((ConMapPersister) lookupTable).init();
             // set the persister in prototype
             Method method = prototype.getClass().getMethod("setLookupTable",
-                                                    Persister.class);
+                                                           Persister.class);
             method.invoke(prototype, lookupTable);
         } catch (NoSuchMethodException e) {
             // this is expected
@@ -57,6 +56,16 @@ public class PrototypeWrapper {
         }
     }
 
+    /**
+     * Find PE corresponding to keyValue. If no such PE exists, then a new one
+     * is created by cloning the prototype and this is returned. As a
+     * side-effect, the last update time for the PE in the lookup table is
+     * modified.
+     * 
+     * @param keyValue
+     *            key value
+     * @return PE corresponding to keyValue.
+     */
     public ProcessingElement getPE(String keyValue) {
         ProcessingElement pe = null;
         try {
@@ -66,6 +75,28 @@ public class PrototypeWrapper {
             }
             // update the last update time on the entry
             lookupTable.set(keyValue, pe, prototype.getTtl());
+
+        } catch (Exception e) {
+            logger.error("exception when looking up pe for key:" + keyValue, e);
+        }
+
+        return pe;
+    }
+
+    /**
+     * Find PE corresponding to keyValue. If no such PE exists, then null is
+     * returned. Note: the last update time is not modified in the lookup table.
+     * 
+     * @param keyValue
+     *            key value
+     * @return PE corresponding to keyValue, if such a PE exists. Null
+     *         otherwise.
+     */
+    public ProcessingElement lookupPE(String keyValue) {
+        ProcessingElement pe = null;
+
+        try {
+            pe = (ProcessingElement) lookupTable.get(keyValue);
 
         } catch (Exception e) {
             logger.error("exception when looking up pe for key:" + keyValue, e);

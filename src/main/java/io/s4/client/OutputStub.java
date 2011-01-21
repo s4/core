@@ -13,11 +13,14 @@
  * language governing permissions and limitations under the
  * License. See accompanying LICENSE file. 
  */
-package io.s4.listener;
+package io.s4.client;
 
-public interface EventListener extends EventProducer {
+import io.s4.processor.AsynchronousEventProcessor;
 
-    int getId();
+import java.util.List;
 
-    String getAppName();
+public interface OutputStub extends AsynchronousEventProcessor {
+
+    List<String> getAcceptedStreams();
+
 }

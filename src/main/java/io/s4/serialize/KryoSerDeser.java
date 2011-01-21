@@ -15,8 +15,11 @@
  */
 package io.s4.serialize;
 
+import java.nio.ByteBuffer;
+
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.ObjectBuffer;
+import com.esotericsoftware.kryo.serialize.SimpleSerializer;
 
 public class KryoSerDeser implements SerializerDeserializer {
 
@@ -24,6 +27,23 @@ public class KryoSerDeser implements SerializerDeserializer {
 
     public KryoSerDeser() {
         kryo.setRegistrationOptional(true);
+
+        // UUIDs don't have a no-arg constructor.
+        kryo.register(java.util.UUID.class,
+                      new SimpleSerializer<java.util.UUID>() {
+                          @Override
+                          public java.util.UUID read(ByteBuffer buf) {
+                              return new java.util.UUID(buf.getLong(),
+                                                        buf.getLong());
+                          }
+
+                          @Override
+                          public void write(ByteBuffer buf, java.util.UUID uuid) {
+                              buf.putLong(uuid.getMostSignificantBits());
+                              buf.putLong(uuid.getLeastSignificantBits());
+                          }
+
+                      });
     }
 
     @Override

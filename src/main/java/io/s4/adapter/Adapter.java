@@ -16,7 +16,7 @@
 package io.s4.adapter;
 
 import io.s4.collector.EventWrapper;
-import io.s4.dispatcher.Dispatcher;
+import io.s4.dispatcher.EventDispatcher;
 import io.s4.listener.EventHandler;
 import io.s4.listener.EventListener;
 import io.s4.util.S4Util;
@@ -25,26 +25,24 @@ import java.io.File;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-
+import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 public class Adapter implements EventHandler {
     private static String coreHome = "../s4_core";
 
-    private Dispatcher dispatcher;
+    private EventDispatcher dispatcher;
     private EventListener[] eventListeners;
     private String configFilename;
 
-    public void setDispatcher(Dispatcher dispatcher) {
+    public void setDispatcher(EventDispatcher dispatcher) {
         this.dispatcher = dispatcher;
     }
 

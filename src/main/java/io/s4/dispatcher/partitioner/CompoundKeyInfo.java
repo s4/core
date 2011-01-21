@@ -16,8 +16,8 @@
 package io.s4.dispatcher.partitioner;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 public class CompoundKeyInfo implements Serializable {
     List<KeyInfo> keyInfoList = new ArrayList<KeyInfo>();
@@ -71,6 +71,7 @@ public class CompoundKeyInfo implements Serializable {
     }
 
     public String toString() {
-        return "{" + getCompoundKey() + " = " + getCompoundValue() + "}";
+        return "{" + getCompoundKey() + " = " + getCompoundValue() + "}:"
+                + getPartitionId();
     }
 }

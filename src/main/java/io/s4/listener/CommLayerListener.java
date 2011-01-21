@@ -21,8 +21,12 @@ import static io.s4.util.MetricsName.low_level_listener_msg_drop_ct;
 import static io.s4.util.MetricsName.low_level_listener_msg_in_ct;
 import static io.s4.util.MetricsName.low_level_listener_qsz;
 import static io.s4.util.MetricsName.s4_core_exit_ct;
-
 import io.s4.collector.EventWrapper;
+import io.s4.comm.core.CommEventCallback;
+import io.s4.comm.core.CommLayerState;
+import io.s4.comm.core.Deserializer;
+import io.s4.comm.core.ListenerProcess;
+import io.s4.comm.util.ConfigParser.Cluster.ClusterType;
 import io.s4.logger.Monitor;
 import io.s4.serialize.SerializerDeserializer;
 
@@ -36,11 +40,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.log4j.Logger;
-
-import io.s4.comm.core.CommEventCallback;
-import io.s4.comm.core.CommLayerState;
-import io.s4.comm.core.Deserializer;
-import io.s4.comm.core.ListenerProcess;
 
 public class CommLayerListener implements EventListener, Runnable {
     private static Logger logger = Logger.getLogger(CommLayerListener.class);
@@ -70,6 +69,12 @@ public class CommLayerListener implements EventListener, Runnable {
         this.maxQueueSize = maxQueueSize;
     }
 
+    @Override
+    public int getId() {
+        return partitionId;
+    }
+
+    @Override
     public String getAppName() {
         return appName;
     }
@@ -241,6 +246,8 @@ public class CommLayerListener implements EventListener, Runnable {
             EventWrapper eventWrapper = null;
             try {
                 eventWrapper = (EventWrapper) serDeser.deserialize(rawMessage);
+                System.out.println("listened and deserialized event: "
+                        + eventWrapper);
             } catch (RuntimeException rte) {
                 Logger.getLogger("s4")
                       .error("Error converting message to an event: ", rte);

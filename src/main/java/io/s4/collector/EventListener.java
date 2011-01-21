@@ -15,21 +15,20 @@
  */
 package io.s4.collector;
 
+import static io.s4.util.MetricsName.S4_CORE_METRICS;
+import static io.s4.util.MetricsName.S4_EVENT_METRICS;
+import static io.s4.util.MetricsName.generic_listener_msg_in_ct;
 import io.s4.listener.EventHandler;
 import io.s4.logger.Monitor;
+import io.s4.processor.AsynchronousEventProcessor;
 import io.s4.processor.PEContainer;
-import io.s4.util.MetricsName;
-
-import java.util.Map;
 
 import org.apache.log4j.Logger;
-
-import static io.s4.util.MetricsName.*;
 
 public class EventListener implements EventHandler {
     private static Logger logger = Logger.getLogger(EventListener.class);
     private int eventCount = 0;
-    private PEContainer peContainer;
+    private AsynchronousEventProcessor eventProcessor;
     private io.s4.listener.EventListener rawListener;
     private Monitor monitor;
 
@@ -38,11 +37,19 @@ public class EventListener implements EventHandler {
     }
 
     public void setPeContainer(PEContainer peContainer) {
-        this.peContainer = peContainer;
+        this.eventProcessor = peContainer;
+    }
+
+    public void setEventProcessor(AsynchronousEventProcessor eventProcessor) {
+        this.eventProcessor = eventProcessor;
     }
 
     public void setRawListener(io.s4.listener.EventListener rawListener) {
         this.rawListener = rawListener;
+    }
+
+    public io.s4.listener.EventListener getRawListener() {
+        return this.rawListener;
     }
 
     public int getEventCount() {
@@ -66,7 +73,7 @@ public class EventListener implements EventHandler {
                 logger.debug("STEP 3 (EventListener): peContainer.addEvent - "
                         + eventWrapper.getEvent().toString());
             }
-            peContainer.queueWork(eventWrapper);
+            eventProcessor.queueWork(eventWrapper);
 
             if (monitor != null) {
                 monitor.increment(generic_listener_msg_in_ct.toString(),
