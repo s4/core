@@ -58,9 +58,6 @@ public class ByteArrayIOChannel implements IOChannel {
         int size = (int) ( // NOTE: type cast not necessary for int
         (0xff & s[0]) << 24 | (0xff & s[1]) << 16 | (0xff & s[2]) << 8 | (0xff & s[3]) << 0);
 
-        System.out.println("message size (bigendian bytes): " + s[0] + ":"
-                + s[1] + ":" + s[2] + ":" + s[3] + "=" + size);
-
         if (size == 0)
             return null;
 
@@ -68,8 +65,6 @@ public class ByteArrayIOChannel implements IOChannel {
 
         // read the message
         readBytes(v, size);
-
-        System.out.println("message: " + new String(v));
 
         return v;
     }

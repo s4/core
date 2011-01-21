@@ -92,7 +92,6 @@ public class SinglePERequest extends Request {
             // requests for getters should be of the form $field. Responds with
             // pe.getField()
             if (q.startsWith("$")) {
-                System.out.println("evaluating query: " + q);
                 try {
                     Object res = MethodInvoker.invokeGetter(pe, q.substring(1));
                     results.put(q, res);

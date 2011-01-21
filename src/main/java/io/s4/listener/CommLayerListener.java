@@ -245,8 +245,7 @@ public class CommLayerListener implements EventListener, Runnable {
             EventWrapper eventWrapper = null;
             try {
                 eventWrapper = (EventWrapper) serDeser.deserialize(rawMessage);
-                System.out.println("listened and deserialized event: "
-                        + eventWrapper);
+
             } catch (RuntimeException rte) {
                 Logger.getLogger("s4")
                       .error("Error converting message to an event: ", rte);

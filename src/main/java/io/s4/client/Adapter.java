@@ -180,7 +180,7 @@ public class Adapter {
                 dispatcher.dispatchEvent(stream, keys, event);
 
             } catch (Exception e) {
-                Logger.getLogger("dispatcher").info("Exception adapting event",
+                Logger.getLogger("adapter").info("Exception adapting event",
                                                     e);
             }
         }
@@ -201,7 +201,6 @@ public class Adapter {
          */
         @Override
         public void queueWork(EventWrapper eventWrapper) {
-            System.out.println("queued from S4: " + eventWrapper);
             List<OutputStub> stubs = eventReceivers.get(eventWrapper.getStreamName());
 
             // stubs that accept any stream

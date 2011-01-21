@@ -47,7 +47,6 @@ public class MethodInvoker {
             Method getter = findGetter(obj.getClass(), name);
 
             if (getter != null) {
-                System.out.println("invoking: " + getter);
                 return getter.invoke(obj);
 
             } else {

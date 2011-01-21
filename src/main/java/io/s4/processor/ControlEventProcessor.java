@@ -39,13 +39,10 @@ public class ControlEventProcessor {
         String en = e.getStreamName(); // e.g. "#joinPe01"
         String pn = p.getId(); // e.g. "JoinPE01"
 
-        System.out.println("eventName:" + en + " protoName:" + pn);
         // stream name has to match PE's ID (modulo case).
         // e.g. "#joinPe01" will match "JoinPE01"
         if (!en.regionMatches(true, 1, pn, 0, pn.length()))
             return;
-
-        System.out.println("executing handler");
 
         execute(e, p);
     }
@@ -63,25 +60,17 @@ public class ControlEventProcessor {
 
             String keyVal = keyInfo.getCompoundValue();
 
-            System.out.println("finding PE for key " + keyVal);
-
             ProcessingElement pe = p.lookupPE(keyVal);
 
             Response response = ((SinglePERequest) event).evaluate(pe);
             String stream = response.getRequestInfo().getStream();
 
-            System.out.println("got response: " + response);
-
             dispatcher.dispatchEvent(stream, response);
 
         } else if (event instanceof PrototypeRequest) {
             // Or handle aggregate requests to Prototypes.
-            System.out.println("handling prototype request: " + event);
-
             Response response = ((PrototypeRequest) event).evaluate(p);
             String stream = response.getRequestInfo().getStream();
-
-            System.out.println("got response: " + response);
 
             dispatcher.dispatchEvent(stream, response);
         }

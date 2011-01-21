@@ -31,10 +31,7 @@ public class MultiDispatcher implements EventDispatcher {
     @Override
     public void dispatchEvent(String streamName, Object event) {
         if (dispatchers != null) {
-            System.out.println("Dispatching on stream " + streamName
-                    + " event: " + event);
             for (EventDispatcher dispatcher : dispatchers) {
-                System.out.println("trying " + dispatcher);
                 dispatcher.dispatchEvent(streamName, event);
             }
         }

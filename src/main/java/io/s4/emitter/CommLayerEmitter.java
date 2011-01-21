@@ -110,8 +110,6 @@ public class CommLayerEmitter implements EventEmitter, Runnable {
             decorateRequest((Request) eventWrapper.getEvent());
         }
 
-        System.out.println("emitting to partition " + partitionId + " event:"
-                + eventWrapper);
         try {
             byte[] rawMessage = serDeser.serialize(eventWrapper);
             MessageHolder mh = new MessageHolder(partitionId, rawMessage);
@@ -137,8 +135,6 @@ public class CommLayerEmitter implements EventEmitter, Runnable {
 
         if (rinfo != null && listener != null)
             rinfo.setPartition(listener.getId());
-
-        System.out.println("request: " + r);
     }
 
     @Override
