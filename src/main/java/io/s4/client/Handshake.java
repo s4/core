@@ -21,7 +21,9 @@ import io.s4.client.util.ByteArrayIOChannel;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
@@ -84,12 +86,44 @@ public class Handshake {
     private ClientConnection clientConnect(byte[] v, ByteArrayIOChannel io,
                                            Socket sock) throws IOException {
 
+        List<String> reason = new ArrayList<String>(1);
+        ClientConnection conn = clientConnectCreate(v, io, sock, reason);
+
+        String message = null;
+        try {
+            JSONObject resp = new JSONObject();
+
+            resp.put("status", (conn != null ? "ok" : "failed"));
+
+            if (conn == null && !reason.isEmpty()) {
+                resp.put("reason", reason.get(0));
+            }
+
+            message = resp.toString();
+
+        } catch (JSONException e) {
+            logger.error("error creating response during connect.", e);
+            return null;
+        }
+        
+        io.send(message.getBytes());
+        
+        return conn;
+    }
+
+    private ClientConnection clientConnectCreate(byte[] v,
+                                                 ByteArrayIOChannel io,
+                                                 Socket sock,
+                                                 List<String> reason)
+            throws IOException {
+
         try {
             JSONObject cInfo = new JSONObject(new String(v));
 
             String s = cInfo.optString("uuid", "");
             if (s.isEmpty()) {
                 logger.error("missing client identifier during handshake.");
+                reason.add("missing UUID");
                 return null;
             }
 
@@ -101,6 +135,7 @@ public class Handshake {
             ClientStub.ClientReadMode rmode = ClientStub.ClientReadMode.fromString(s);
             if (rmode == null) {
                 logger.error(u + ": unknown readMode " + s);
+                reason.add("unknown readMode " + s);
                 return null;
             }
 
@@ -108,6 +143,7 @@ public class Handshake {
             ClientStub.ClientWriteMode wmode = ClientStub.ClientWriteMode.fromString(s);
             if (wmode == null) {
                 logger.error(u + ": unknown writeMode " + s);
+                reason.add("unknown writeMode " + s);
                 return null;
             }
 
@@ -117,12 +153,15 @@ public class Handshake {
 
         } catch (JSONException e) {
             logger.error("malformed JSON from client during handshake", e);
+            reason.add("malformed JSON");
 
         } catch (NumberFormatException e) {
             logger.error("received malformed UUID", e);
+            reason.add("malformed UUID");
 
         } catch (IllegalArgumentException e) {
             logger.error("received malformed UUID", e);
+            reason.add("malformed UUID");
         }
 
         return null;
