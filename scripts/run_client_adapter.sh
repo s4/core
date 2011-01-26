@@ -26,11 +26,11 @@ if [ "$1" == "-h" ]; then
   echo "  -c s4 core home" >&2
   echo "  -a s4 apps home" >&2
   echo "  -s sender cluster name" >&2
-  echo "  -g listener cluster name (same as -a if not specified)" >&2
+  echo "  -g listener cluster name (same as -s if not specified)" >&2
   echo "  -z cluster manager address (hostname:port)" >&2
   echo "  -u path to user defined data adapter classes" >&2
   echo "  -x redbutton mode (explicit cluster management)" >&2
-  echo "  -d legacy data adapter conf file" >&2
+  echo "  -d client stub conf file" >&2
   echo "  -h help" >&2
   exit 1
 fi

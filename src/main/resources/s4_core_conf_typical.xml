@@ -24,7 +24,13 @@
 
   <bean id="serDeser" class="io.s4.serialize.KryoSerDeser"/>
 
-  <!--START: Dispatchers for control events -->
+
+  <!--START: Dispatchers for control event processor.
+
+       If stream name in Response is @adapter or @client,
+       then the event is sent to the adapter
+       (via ctrlDispatcherAdapter). Else it is sent to the
+       S4 cluster itself (via ctrlDispatcherS4) -->
   <bean id="ctrlDispatcher" class="io.s4.dispatcher.MultiDispatcher">
     <property name="dispatchers">
       <list>
