@@ -4,7 +4,7 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 	        http://www.apache.org/licenses/LICENSE-2.0
+ *            http://www.apache.org/licenses/LICENSE-2.0
  * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -75,7 +75,8 @@ public abstract class AbstractPE implements ProcessingElement {
     private int outputsBeforePause = -1;
     private long pauseTimeInMillis;
     private boolean logPauses = false;
-
+    private String initMethod = null;
+    
     public void setSaveKeyRecord(boolean saveKeyRecord) {
         this.saveKeyRecord = saveKeyRecord;
     }
@@ -99,6 +100,19 @@ public abstract class AbstractPE implements ProcessingElement {
         }
     }
 
+    /**
+     * The name of a method to be used as an initializer.  The method will be
+     * called after the object is cloned from the prototype PE.
+     */
+    public void setInitMethod(String initMethod)
+    {
+       this.initMethod = initMethod;
+    }
+    
+    public String getInitMethod() {
+       return this.initMethod;
+    }
+    
     public Clock getS4Clock() {
         return s4Clock;
     }
@@ -358,7 +372,8 @@ public abstract class AbstractPE implements ProcessingElement {
      */
     public Object clone() {
         try {
-            return super.clone();
+            Object clone = super.clone();
+            return clone;
         } catch (CloneNotSupportedException e) {
             throw new RuntimeException(e);
         }

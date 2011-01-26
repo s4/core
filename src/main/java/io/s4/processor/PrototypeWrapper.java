@@ -72,6 +72,12 @@ public class PrototypeWrapper {
             pe = (ProcessingElement) lookupTable.get(keyValue);
             if (pe == null) {
                 pe = (ProcessingElement) prototype.clone();
+                //invoke the initialization method if it has been specified
+                if (pe.getInitMethod() != null) {
+                   Method initMethod = pe.getClass().getMethod(pe.getInitMethod(), new Class[0]);
+                   initMethod.invoke(pe, (new Object[0]));
+                }
+
             }
             // update the last update time on the entry
             lookupTable.set(keyValue, pe, prototype.getTtl());
