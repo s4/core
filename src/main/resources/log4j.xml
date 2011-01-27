@@ -17,6 +17,10 @@
         <level value="info"/>
         <appender-ref ref="R"/>
   </logger>
+  <logger name="adapter" additivity="false">
+        <level value="info"/>
+        <appender-ref ref="R"/>
+  </logger>
   <logger name="monitor">
         <level value="info"/>
         <appender-ref ref="S"/>

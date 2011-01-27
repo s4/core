@@ -105,9 +105,9 @@ public class Handshake {
             logger.error("error creating response during connect.", e);
             return null;
         }
-        
+
         io.send(message.getBytes());
-        
+
         return conn;
     }
 
@@ -148,6 +148,15 @@ public class Handshake {
             }
 
             logger.info(u + " read=" + rmode + " write=" + wmode);
+
+            if (rmode == ClientStub.ClientReadMode.None
+                    && wmode == ClientStub.ClientWriteMode.Disabled) {
+                // client cannot disable read AND write...
+                logger.error("client neither reads nor writes.");
+                reason.add("read and write disabled");
+                
+                return null;
+            }
 
             return clientStub.new ClientConnection(sock, u, rmode, wmode);
 

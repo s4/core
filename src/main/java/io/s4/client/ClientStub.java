@@ -129,7 +129,6 @@ public abstract class ClientStub implements OutputStub, InputStub {
     // send an event into the cluster via adapter.
     private void injectEvent(EventWrapper e) {
         for (EventHandler handler : handlers) {
-            logger.info("injecting event");
             handler.processEvent(e);
         }
     }
@@ -160,7 +159,6 @@ public abstract class ClientStub implements OutputStub, InputStub {
 
     @Override
     public void queueWork(EventWrapper e) {
-        logger.info("queueing work: " + e);
         queue.offer(e);
     }
 
@@ -239,8 +237,6 @@ public abstract class ClientStub implements OutputStub, InputStub {
                     EventWrapper event = queue.take();
                     byte[] b = bytesFromEventWrapper(event);
 
-                    logger.info("dequeued: " + event);
-
                     // Responses need special handling.
                     if (event.getEvent() instanceof Response) {
                         dispatchResponse(event, b);
@@ -263,7 +259,6 @@ public abstract class ClientStub implements OutputStub, InputStub {
                 for (ClientConnection c : clients.values()) {
                     if (c.good() && c.clientReadMode.takePublic()) {
                         try {
-                            logger.debug("sending to client " + c.uuid);
                             c.io.send(b);
 
                         } catch (IOException e) {
@@ -295,7 +290,6 @@ public abstract class ClientStub implements OutputStub, InputStub {
 
                 if (c != null && c.good() && c.clientReadMode.takePrivate()) {
                     try {
-                        logger.debug("sending response to client " + c.uuid);
                         c.io.send(b);
 
                     } catch (IOException e) {
