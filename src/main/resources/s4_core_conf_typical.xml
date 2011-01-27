@@ -123,4 +123,24 @@
     <property name="peContainer" ref="peContainer"/>
     <property name="minimumMemory" value="52428800"/>
   </bean>
+
+
+
+
+  <!-- Some useful beans related to client-adapter for apps -->
+
+  <!-- Dispatcher to send to all adapter nodes. -->
+  <bean id="dispatcherToClientAdapters" class="io.s4.dispatcher.Dispatcher" init-method="init">
+    <property name="partitioners">
+      <list>
+        <ref bean="broadcastPartitioner"/>
+      </list>
+    </property>
+    <property name="eventEmitter" ref="commLayerEmitterToAdapter"/>
+    <property name="loggerName" value="s4"/>
+  </bean>
+
+  <!-- Partitioner to achieve broadcast -->
+  <bean id="broadcastPartitioner" class="io.s4.dispatcher.partitioner.BroadcastPartitioner"/>
+  
 </beans>
