@@ -9,6 +9,14 @@
   <url>http://maven.apache.org</url>
   <repositories>
     <repository>
+      <url>http://repo1.maven.org/maven2</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <id>central</id>
+      <name>Maven Repository Switchboard</name>
+    </repository>
+    <repository>
       <id>gson</id>
       <url>http://google-gson.googlecode.com/svn/mavenrepo</url>
       <snapshots>
