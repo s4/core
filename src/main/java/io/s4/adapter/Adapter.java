@@ -19,6 +19,7 @@ import io.s4.collector.EventWrapper;
 import io.s4.dispatcher.EventDispatcher;
 import io.s4.listener.EventHandler;
 import io.s4.listener.EventListener;
+import io.s4.listener.EventProducer;
 import io.s4.util.S4Util;
 
 import java.io.File;
@@ -39,16 +40,16 @@ public class Adapter implements EventHandler {
     private static String coreHome = "../s4_core";
 
     private EventDispatcher dispatcher;
-    private EventListener[] eventListeners;
+    private EventProducer[] eventListeners;
     private String configFilename;
 
     public void setDispatcher(EventDispatcher dispatcher) {
         this.dispatcher = dispatcher;
     }
 
-    public void setEventListeners(EventListener[] eventListeners) {
+    public void setEventListeners(EventProducer[] eventListeners) {
         this.eventListeners = eventListeners;
-        for (EventListener eventListener : eventListeners) {
+        for (EventProducer eventListener : eventListeners) {
             eventListener.addHandler(this);
         }
     }
@@ -188,18 +189,18 @@ public class Adapter implements EventHandler {
         ApplicationContext appContext = new FileSystemXmlApplicationContext(new String[] { "file:"
                                                                                     + userConfigFilename },
                                                                             context);
-        Map listenerBeanMap = appContext.getBeansOfType(EventListener.class);
+        Map listenerBeanMap = appContext.getBeansOfType(EventProducer.class);
         if (listenerBeanMap.size() == 0) {
             System.err.println("No user-defined listener beans");
             System.exit(1);
         }
-        EventListener[] eventListeners = new EventListener[listenerBeanMap.size()];
+        EventProducer[] eventListeners = new EventProducer[listenerBeanMap.size()];
 
         int index = 0;
         for (Iterator it = listenerBeanMap.keySet().iterator(); it.hasNext(); index++) {
             String beanName = (String) it.next();
-            System.out.println("Adding listener " + beanName);
-            eventListeners[index] = (EventListener) listenerBeanMap.get(beanName);
+            System.out.println("Adding producer " + beanName);
+            eventListeners[index] = (EventProducer) listenerBeanMap.get(beanName);
         }
 
         adapter.setEventListeners(eventListeners);
