@@ -15,7 +15,6 @@
  */
 package io.s4.client;
 
-import io.s4.client.ClientStub.ClientConnection;
 import io.s4.client.ClientStub.Info;
 import io.s4.client.util.ByteArrayIOChannel;
 
@@ -132,7 +131,7 @@ public class Handshake {
             logger.info("connecting to client " + u);
 
             s = cInfo.optString("readMode", "All");
-            ClientStub.ClientReadMode rmode = ClientStub.ClientReadMode.fromString(s);
+            ClientReadMode rmode = ClientReadMode.fromString(s);
             if (rmode == null) {
                 logger.error(u + ": unknown readMode " + s);
                 reason.add("unknown readMode " + s);
@@ -140,7 +139,7 @@ public class Handshake {
             }
 
             s = cInfo.optString("writeMode", "Enabled");
-            ClientStub.ClientWriteMode wmode = ClientStub.ClientWriteMode.fromString(s);
+            ClientWriteMode wmode = ClientWriteMode.fromString(s);
             if (wmode == null) {
                 logger.error(u + ": unknown writeMode " + s);
                 reason.add("unknown writeMode " + s);
@@ -149,8 +148,8 @@ public class Handshake {
 
             logger.info(u + " read=" + rmode + " write=" + wmode);
 
-            if (rmode == ClientStub.ClientReadMode.None
-                    && wmode == ClientStub.ClientWriteMode.Disabled) {
+            if (rmode == ClientReadMode.None
+                    && wmode == ClientWriteMode.Disabled) {
                 // client cannot disable read AND write...
                 logger.error("client neither reads nor writes.");
                 reason.add("read and write disabled");
@@ -158,7 +157,7 @@ public class Handshake {
                 return null;
             }
 
-            return clientStub.new ClientConnection(sock, u, rmode, wmode);
+            return new ClientConnection(clientStub, sock, u, rmode, wmode);
 
         } catch (JSONException e) {
             logger.error("malformed JSON from client during handshake", e);

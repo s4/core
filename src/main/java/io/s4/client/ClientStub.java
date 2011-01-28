@@ -127,7 +127,7 @@ public abstract class ClientStub implements OutputStub, InputStub {
     }
 
     // send an event into the cluster via adapter.
-    private void injectEvent(EventWrapper e) {
+    void injectEvent(EventWrapper e) {
         for (EventHandler handler : handlers) {
             handler.processEvent(e);
         }
@@ -135,7 +135,7 @@ public abstract class ClientStub implements OutputStub, InputStub {
 
     // private List<ClientConnection> clients = new
     // ArrayList<ClientConnection>();
-    private HashMap<UUID, ClientConnection> clients = new HashMap<UUID, ClientConnection>();
+    HashMap<UUID, ClientConnection> clients = new HashMap<UUID, ClientConnection>();
 
     /**
      * Create a client connection and add it to list of clients.
@@ -305,158 +305,4 @@ public abstract class ClientStub implements OutputStub, InputStub {
             }
         }
     };
-
-    /**
-     * Client mode.
-     */
-    public enum ClientReadMode {
-        None(false, false), Private(true, false), All(true, true);
-
-        private final boolean priv;
-        private final boolean pub;
-
-        ClientReadMode(boolean priv, boolean pub) {
-            this.priv = priv;
-            this.pub = pub;
-        }
-
-        public boolean takePublic() {
-            return pub;
-        }
-
-        public boolean takePrivate() {
-            return priv;
-        }
-
-        public static ClientReadMode fromString(String s) {
-            if (s.equalsIgnoreCase("none"))
-                return None;
-            else if (s.equalsIgnoreCase("private"))
-                return Private;
-            else if (s.equalsIgnoreCase("all"))
-                return All;
-            else
-                return null;
-        }
-    };
-
-    /**
-     * Client's write mode.
-     */
-    public enum ClientWriteMode {
-        Enabled, Disabled;
-
-        public static ClientWriteMode fromString(String s) {
-            if (s.equalsIgnoreCase("enabled"))
-                return Enabled;
-            else if (s.equalsIgnoreCase("disabled"))
-                return Disabled;
-            else
-                return null;
-        }
-    }
-
-    /**
-     * Connection to a client. A Stub has a collection of connections.
-     */
-    public class ClientConnection {
-        /**
-         * TCP/IP socket used to communicate with client.
-         */
-        private final Socket socket;
-
-        public final IOChannel io;
-
-        public final ClientReadMode clientReadMode;
-        public final ClientWriteMode clientWriteMode;
-
-        /**
-         * GUID of client.
-         */
-        public final UUID uuid;
-
-        public ClientConnection(Socket socket, UUID uuid,
-                ClientReadMode clientReadMode, ClientWriteMode clientWriteMode)
-                throws IOException {
-            this.uuid = uuid;
-            this.socket = socket;
-            this.io = createIOChannel(socket);
-            this.clientReadMode = clientReadMode;
-            this.clientWriteMode = clientWriteMode;
-        }
-
-        public boolean good() {
-            return socket.isConnected();
-        }
-
-        public void close() {
-            synchronized (clients) {
-                logger.info("closing connection to client " + uuid);
-                clients.remove(this.uuid);
-            }
-
-            try {
-                socket.close();
-            } catch (IOException e) {
-                logger.error("problem closing client connection to client "
-                        + uuid, e);
-            }
-        }
-
-        private Thread receiverThread = null;
-
-        public void start() {
-            if (clientWriteMode == ClientWriteMode.Enabled)
-                (receiverThread = new Thread(receiver)).start();
-        }
-
-        public void stop() {
-            if (receiverThread != null) {
-                receiverThread.interrupt();
-                receiverThread = null;
-            }
-        }
-
-        public final Runnable receiver = new Runnable() {
-            public void run() {
-                try {
-                    while (good()) {
-                        byte[] b = io.recv();
-
-                        // null, empty => goodbye
-                        if (b == null || b.length == 0) {
-                            logger.info("client session ended " + uuid);
-                            break;
-                        }
-
-                        EventWrapper ew = eventWrapperFromBytes(b);
-                        if (ew == null)
-                            continue;
-
-                        Object event = ew.getEvent();
-                        if (event instanceof Request) {
-                            decorateRequest((Request) event);
-                            logger.info("Decorated client request: " + ew.toString());
-                        }
-
-                        injectEvent(ew);
-                    }
-                } catch (IOException e) {
-                    logger.info("error while reading from client " + uuid, e);
-
-                } finally {
-                    close();
-                }
-            }
-
-            private void decorateRequest(Request r) {
-                // add UUID of client into request.
-                Request.RInfo info = r.getRInfo();
-
-                if (info != null && info instanceof Request.ClientRInfo)
-                    ((Request.ClientRInfo) info).setRequesterUUID(ClientConnection.this.uuid);
-            }
-        };
-
-    }
 }
