@@ -37,7 +37,7 @@ public class SinglePERequest extends Request {
 
     private final List<String> query;
 
-    public SinglePERequest(List<String> target, List<String> query, Info info) {
+    public SinglePERequest(List<String> target, List<String> query, RInfo info) {
         this.target = target;
         this.query = query;
         this.rinfo = info;

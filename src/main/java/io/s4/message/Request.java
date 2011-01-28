@@ -17,15 +17,25 @@ package io.s4.message;
 
 import io.s4.dispatcher.partitioner.CompoundKeyInfo;
 import io.s4.dispatcher.partitioner.Hasher;
+import io.s4.util.GsonUtil;
 
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.UUID;
 
+import com.google.gson.InstanceCreator;
+
 abstract public class Request {
 
-    protected Info rinfo;
+    protected RInfo rinfo = nullRInfo;
 
-    abstract public static class Info {
+    public final static RInfo nullRInfo = new NullRInfo();
+
+    /**
+     * Requester/Return information
+     */
+    abstract public static class RInfo {
+
         private long id = 0;
 
         /**
@@ -70,9 +80,20 @@ abstract public class Request {
             this.partition = partition;
         }
 
+        // Tell Gson how to instantiate one of these: create a ClientRInfo
+        static {
+            InstanceCreator<RInfo> creator = new InstanceCreator<RInfo>() {
+                public io.s4.message.Request.RInfo createInstance(Type type) {
+                    return new io.s4.message.Request.ClientRInfo();
+                }
+            };
+
+            GsonUtil.registerTypeAdapter(RInfo.class, creator);
+        }
+        
     }
 
-    public static class ClientInfo extends Info {
+    public static class ClientRInfo extends RInfo {
         private UUID requesterUUID = null;
 
         /**
@@ -96,7 +117,7 @@ abstract public class Request {
         }
     }
 
-    public static class PEInfo extends Info {
+    public static class PERInfo extends RInfo {
         private String requesterKey = null;
 
         /**
@@ -120,15 +141,41 @@ abstract public class Request {
         }
     }
 
+    public static class NullRInfo extends RInfo {
+        public NullRInfo() {
+            super.stream = "@null";
+            super.partition = -1;
+        }
+    }
+
     /**
      * Query metainformation.
      * 
      * @return Info representing origin of request.
      */
-    public Info getInfo() {
+    public RInfo getRInfo() {
         return rinfo;
     }
 
+    /**
+     * Query metainformation.
+     */
+    public void setRInfo(RInfo rinfo) {
+        this.rinfo = rinfo;
+    }
+
+    /**
+     * Partition itself. This is used by the default partitioner.
+     * 
+     * @param h
+     *            hasher
+     * @param delim
+     *            delimiter used to concatenate compound key values
+     * @param partCount
+     *            number of partitions
+     * @return list of compound keys: one event may have to be sent to multiple
+     *         nodes.
+     */
     abstract public List<CompoundKeyInfo> partition(Hasher h, String delim,
                                                     int partCount);
 }

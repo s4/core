@@ -64,8 +64,8 @@ public class Response {
         return request;
     }
 
-    public SinglePERequest.Info getRequestInfo() {
-        return (request != null ? request.getInfo() : null);
+    public Request.RInfo getRInfo() {
+        return (request != null ? request.getRInfo() : null);
     }
 
     public String toString() {
@@ -75,7 +75,7 @@ public class Response {
     public List<CompoundKeyInfo> partition(int partCount) {
         // partition id is available from the request info object
 
-        int p = this.getRequestInfo().getPartition();
+        int p = this.getRInfo().getPartition();
         List<CompoundKeyInfo> partitionInfoList = null;
 
         if (p >= 0 && p < partCount) {

@@ -281,10 +281,10 @@ public abstract class ClientStub implements OutputStub, InputStub {
 
         private void dispatchResponse(EventWrapper event, byte[] b) {
             Response res = (Response) event.getEvent();
-            Request.Info rinfo = res.getRequestInfo();
+            Request.RInfo rinfo = res.getRInfo();
 
-            if (rinfo instanceof Request.ClientInfo) {
-                UUID uuid = ((Request.ClientInfo) rinfo).getRequesterUUID();
+            if (rinfo instanceof Request.ClientRInfo) {
+                UUID uuid = ((Request.ClientRInfo) rinfo).getRequesterUUID();
 
                 ClientConnection c = clients.get(uuid);
 
@@ -436,6 +436,7 @@ public abstract class ClientStub implements OutputStub, InputStub {
                         Object event = ew.getEvent();
                         if (event instanceof Request) {
                             decorateRequest((Request) event);
+                            logger.info("Decorated client request: " + ew.toString());
                         }
 
                         injectEvent(ew);
@@ -450,10 +451,10 @@ public abstract class ClientStub implements OutputStub, InputStub {
 
             private void decorateRequest(Request r) {
                 // add UUID of client into request.
-                Request.Info info = r.getInfo();
+                Request.RInfo info = r.getRInfo();
 
-                if (info != null && info instanceof Request.ClientInfo)
-                    ((Request.ClientInfo) info).setRequesterUUID(ClientConnection.this.uuid);
+                if (info != null && info instanceof Request.ClientRInfo)
+                    ((Request.ClientRInfo) info).setRequesterUUID(ClientConnection.this.uuid);
             }
         };
 

@@ -19,13 +19,20 @@ import io.s4.message.Request;
 import io.s4.message.SinglePERequest;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.InstanceCreator;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
 
 import flexjson.JSONDeserializer;
 import flexjson.JSONSerializer;
@@ -116,7 +123,7 @@ public class ObjectBuilder {
         String[] query = { "name", "count", "freq" };
         String target[] = { "ACDW", "11" };
 
-        io.s4.message.Request.ClientInfo rinfo = new io.s4.message.Request.ClientInfo();
+        io.s4.message.Request.ClientRInfo rinfo = new io.s4.message.Request.ClientRInfo();
         rinfo.setRequesterUUID(UUID.randomUUID());
         Request req = new io.s4.message.SinglePERequest(Arrays.asList(target),
                                                         Arrays.asList(query),
@@ -124,14 +131,16 @@ public class ObjectBuilder {
 
         System.out.println(req.toString());
 
-        InstanceCreator<io.s4.message.Request.Info> infoCreator = new InstanceCreator<io.s4.message.Request.Info>() {
-            public io.s4.message.Request.Info createInstance(Type type) {
-                return new io.s4.message.Request.ClientInfo();
+        InstanceCreator<io.s4.message.Request.RInfo> infoCreator = new InstanceCreator<io.s4.message.Request.RInfo>() {
+            public io.s4.message.Request.RInfo createInstance(Type type) {
+                return new io.s4.message.Request.ClientRInfo();
             }
         };
 
-        Gson gson = (new GsonBuilder()).registerTypeAdapter(io.s4.message.Request.Info.class,
+        Gson gson = (new GsonBuilder()).registerTypeAdapter(io.s4.message.Request.RInfo.class,
                                                             infoCreator)
+                                       .registerTypeAdapter(Object.class,
+                                                            new ObjectTypeAdapter())
                                        .create();
 
         System.out.println("gson: " + gson.toJson(req));
@@ -140,5 +149,52 @@ public class ObjectBuilder {
 
         System.out.println(b.toJson(req));
         System.out.println(b.toJson(Arrays.asList(query)));
+
+        System.out.println("----------------------------------------------");
+
+        ArrayList<SSTest> list = new ArrayList<SSTest>();
+
+        SSTest ss1 = new SSTest();
+        ss1.str = "list-element-1";
+        SSTest ss2 = new SSTest();
+        ss2.str = "list-element-2";
+
+        list.add(ss1);
+        list.add(ss2);
+
+        Map<String, Object> listmap = new HashMap<String, Object>();
+        listmap.put("ll", list);
+
+        MapTest mt = new MapTest();
+        mt.map = listmap;
+
+        Object listmapobj = listmap;
+
+        System.out.println("list: " + gson.toJson(list));
+        System.out.println("listmap: " + gson.toJson(listmap));
+        System.out.println("listmapobj: " + gson.toJson(listmapobj));
+        System.out.println("mapobject: " + gson.toJson(mt));
     }
+
+    private static class SSTest {
+        public String str;
+    }
+
+    private static class MapTest {
+        Map<String, Object> map;
+        Map gmap;
+    }
+
+    private static class ObjectTypeAdapter implements JsonSerializer<Object> {
+        public JsonElement serialize(Object src, Type typeOfSrc,
+                                     JsonSerializationContext context) {
+
+            if (src.getClass() != Object.class) {
+                return context.serialize(src, src.getClass());
+            }
+
+            return new JsonObject();
+        }
+    }
+
 }

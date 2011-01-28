@@ -131,7 +131,7 @@ public class CommLayerEmitter implements EventEmitter, Runnable {
 
     // Add partition id of sender
     private void decorateRequest(Request r) {
-        Request.Info rinfo = r.getInfo();
+        Request.RInfo rinfo = r.getRInfo();
 
         if (rinfo != null && listener != null)
             rinfo.setPartition(listener.getId());

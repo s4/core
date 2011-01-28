@@ -32,7 +32,7 @@ public class PrototypeRequest extends Request {
 
     private final List<String> query;
 
-    public PrototypeRequest(List<String> query, Info info) {
+    public PrototypeRequest(List<String> query, RInfo info) {
         this.query = query;
         this.rinfo = info;
     }

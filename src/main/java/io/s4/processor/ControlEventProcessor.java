@@ -50,7 +50,7 @@ public class ControlEventProcessor {
     protected void execute(EventWrapper e, PrototypeWrapper p) {
         List<CompoundKeyInfo> keyInfoList = e.getCompoundKeys();
         Object event = e.getEvent();
-
+        
         if (event instanceof SinglePERequest) {
             // Handle Requests to individual PEs
             if (keyInfoList.isEmpty())
@@ -63,14 +63,14 @@ public class ControlEventProcessor {
             ProcessingElement pe = p.lookupPE(keyVal);
 
             Response response = ((SinglePERequest) event).evaluate(pe);
-            String stream = response.getRequestInfo().getStream();
+            String stream = response.getRInfo().getStream();
 
             dispatcher.dispatchEvent(stream, response);
 
         } else if (event instanceof PrototypeRequest) {
             // Or handle aggregate requests to Prototypes.
             Response response = ((PrototypeRequest) event).evaluate(p);
-            String stream = response.getRequestInfo().getStream();
+            String stream = response.getRInfo().getStream();
 
             dispatcher.dispatchEvent(stream, response);
         }
