@@ -17,31 +17,16 @@ package io.s4.client;
 
 import io.s4.client.util.ObjectBuilder;
 import io.s4.collector.EventWrapper;
-
-import java.lang.reflect.Type;
+import io.s4.util.GsonUtil;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.InstanceCreator;
-
 public class GenericJsonClientStub extends ClientStub {
 
     // private static final ObjectBuilder builder = new ObjectBuilder();
     // private static final Gson builder = new Gson();
-
-    private final static InstanceCreator<io.s4.message.Request.Info> infoCreator = new InstanceCreator<io.s4.message.Request.Info>() {
-        public io.s4.message.Request.Info createInstance(Type type) {
-            return new io.s4.message.Request.ClientInfo();
-        }
-    };
-
-    private final static Gson builder = (new GsonBuilder()).registerTypeAdapter(io.s4.message.Request.Info.class,
-                                                                                infoCreator)
-                                                           .create();
 
     private static final Info protocolInfo = new Info("generic-json", 1, 0);
 
@@ -80,7 +65,7 @@ public class GenericJsonClientStub extends ClientStub {
 
             String jevent = json.getString("object");
 
-            Object obj = builder.fromJson(jevent, clazz);
+            Object obj = GsonUtil.get().fromJson(jevent, clazz);
 
             return new EventWrapper(streamName, keyNames, obj);
 
@@ -102,7 +87,7 @@ public class GenericJsonClientStub extends ClientStub {
         try {
             jevent.put("stream", ew.getStreamName());
             jevent.put("class", obj.getClass().getName());
-            jevent.put("object", builder.toJson(obj));
+            jevent.put("object", GsonUtil.get().toJson(obj));
 
             return jevent.toString().getBytes();
 
