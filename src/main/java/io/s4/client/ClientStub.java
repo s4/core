@@ -235,18 +235,17 @@ public abstract class ClientStub implements OutputStub, InputStub {
             while (!Thread.currentThread().isInterrupted()) {
                 try {
                     EventWrapper event = queue.take();
-                    byte[] b = bytesFromEventWrapper(event);
 
                     // Responses need special handling.
                     if (event.getEvent() instanceof Response) {
-                        dispatchResponse(event, b);
+                        dispatchResponse(event);
                         continue;
                     }
 
                     // TODO: include check to see if the event belongs to a
                     // particular client.
 
-                    dispatchToAllClients(b);
+                    dispatchToAllClients(event);
 
                 } catch (InterruptedException e) {
                     return;
@@ -254,10 +253,14 @@ public abstract class ClientStub implements OutputStub, InputStub {
             }
         }
 
-        private void dispatchToAllClients(byte[] b) {
+        private void dispatchToAllClients(EventWrapper event) {
+
+            byte[] b = bytesFromEventWrapper(event);
+            String stream = event.getStreamName();
+            
             synchronized (clients) {
                 for (ClientConnection c : clients.values()) {
-                    if (c.good() && c.clientReadMode.takePublic()) {
+                    if (c.good() && c.streamAccepted(stream)) {
                         try {
                             c.io.send(b);
 
@@ -279,7 +282,7 @@ public abstract class ClientStub implements OutputStub, InputStub {
             }
         }
 
-        private void dispatchResponse(EventWrapper event, byte[] b) {
+        private void dispatchResponse(EventWrapper event) {
             Response res = (Response) event.getEvent();
             Request.RInfo rinfo = res.getRInfo();
 
@@ -290,6 +293,7 @@ public abstract class ClientStub implements OutputStub, InputStub {
 
                 if (c != null && c.good() && c.clientReadMode.takePrivate()) {
                     try {
+                        byte[] b = bytesFromEventWrapper(event);
                         c.io.send(b);
 
                     } catch (IOException e) {

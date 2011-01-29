@@ -5,6 +5,8 @@ import io.s4.message.Request;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.HashSet;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -56,7 +58,48 @@ public class ClientConnection {
             socket.close();
         } catch (IOException e) {
             ClientStub.logger.error("problem closing client connection to client "
-                    + uuid, e);
+                                            + uuid,
+                                    e);
+        }
+    }
+
+    private HashSet<String> includeStreams = new HashSet<String>();
+    private HashSet<String> excludeStreams = new HashSet<String>();
+
+    public void includeStreams(List<String> streams) {
+        includeStreams.addAll(streams);
+    }
+
+    public void excludeStreams(List<String> streams) {
+        excludeStreams.addAll(streams);
+    }
+
+    /**
+     * Stream is accepted if and only if:
+     * 
+     * (A) readMode is Select and: 1. indifferent to stream inclusion OR stream
+     * is included AND 2. indifferent to stream exclusion OR stream is not
+     * excluded.
+     * 
+     * OR (B) readMode is All
+     * 
+     * @return true if and only if stream is accepted
+     */
+    public boolean streamAccepted(String s) {
+        switch (clientReadMode) {
+            case None:
+            case Private:
+                return false;
+
+            case Select:
+                return (includeStreams.isEmpty() || includeStreams.contains(s))
+                        && (excludeStreams.isEmpty() || !excludeStreams.contains(s));
+
+            case All:
+                return true;
+
+            default:
+                return false;
         }
     }
 
@@ -93,13 +136,15 @@ public class ClientConnection {
                     Object event = ew.getEvent();
                     if (event instanceof Request) {
                         decorateRequest((Request) event);
-                        ClientStub.logger.info("Decorated client request: " + ew.toString());
+                        ClientStub.logger.info("Decorated client request: "
+                                + ew.toString());
                     }
 
                     ClientConnection.this.clientStub.injectEvent(ew);
                 }
             } catch (IOException e) {
-                ClientStub.logger.info("error while reading from client " + uuid, e);
+                ClientStub.logger.info("error while reading from client "
+                        + uuid, e);
 
             } finally {
                 close();

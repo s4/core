@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -130,12 +131,13 @@ public class Handshake {
 
             logger.info("connecting to client " + u);
 
-            s = cInfo.optString("readMode", "All");
+            s = cInfo.optString("readMode", "Private");
             ClientReadMode rmode = ClientReadMode.fromString(s);
             if (rmode == null) {
                 logger.error(u + ": unknown readMode " + s);
                 reason.add("unknown readMode " + s);
                 return null;
+
             }
 
             s = cInfo.optString("writeMode", "Enabled");
@@ -153,12 +155,42 @@ public class Handshake {
                 // client cannot disable read AND write...
                 logger.error("client neither reads nor writes.");
                 reason.add("read and write disabled");
-                
+
                 return null;
             }
 
-            return new ClientConnection(clientStub, sock, u, rmode, wmode);
+            ClientConnection conn = new ClientConnection(clientStub, sock, u, rmode, wmode);
 
+            if (rmode == ClientReadMode.Select) {
+                JSONArray incl = cInfo.optJSONArray("readInclude");
+                JSONArray excl = cInfo.optJSONArray("readExclude");
+
+                if (incl == null && excl == null) {
+                    logger.error(u + ": missing stream selection information");
+                    reason.add("missing readInclude and readExclude");
+                    return null;
+                }
+
+                if (incl != null) {
+                    List<String> streams = new ArrayList<String>(incl.length());
+                    for (int i = 0; i < incl.length(); ++i)
+                        streams.add(incl.getString(i));
+                    
+                    conn.includeStreams(streams);
+                }
+                
+                if (excl != null) {
+                    List<String> streams = new ArrayList<String>(excl.length());
+                    for (int i = 0; i < excl.length(); ++i)
+                        streams.add(excl.getString(i));
+                    
+                    conn.excludeStreams(streams);
+                }
+                
+            }
+
+            return conn;
+            
         } catch (JSONException e) {
             logger.error("malformed JSON from client during handshake", e);
             reason.add("malformed JSON");

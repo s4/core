@@ -19,6 +19,8 @@ import io.s4.client.util.ObjectBuilder;
 import io.s4.collector.EventWrapper;
 import io.s4.util.GsonUtil;
 
+import java.nio.charset.Charset;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -39,7 +41,7 @@ public class GenericJsonClientStub extends ClientStub {
     public EventWrapper eventWrapperFromBytes(byte[] v) {
         try {
             // interpret v as a JSON string
-            String s = new String(v);
+            String s = new String(v, Charset.forName("UTF8"));
             JSONObject json = new JSONObject(s);
 
             String streamName = json.getString("stream");
@@ -89,7 +91,7 @@ public class GenericJsonClientStub extends ClientStub {
             jevent.put("class", obj.getClass().getName());
             jevent.put("object", GsonUtil.get().toJson(obj));
 
-            return jevent.toString().getBytes();
+            return jevent.toString().getBytes(Charset.forName("UTF8"));
 
         } catch (JSONException e) {
             logger.error("exception while converting event wrapper to bytes.",

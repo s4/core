@@ -4,7 +4,7 @@ package io.s4.client;
  * Client mode.
  */
 public enum ClientReadMode {
-    None(false, false), Private(true, false), All(true, true);
+    None(false, false), Private(true, false), Select(true, true), All(true, true);
 
     private final boolean priv;
     private final boolean pub;
@@ -27,6 +27,8 @@ public enum ClientReadMode {
             return None;
         else if (s.equalsIgnoreCase("private"))
             return Private;
+        else if (s.equalsIgnoreCase("select"))
+            return Select;
         else if (s.equalsIgnoreCase("all"))
             return All;
         else
