@@ -4,7 +4,7 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 	        http://www.apache.org/licenses/LICENSE-2.0
+ *            http://www.apache.org/licenses/LICENSE-2.0
  * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -15,7 +15,6 @@
  */
 package io.s4.processor;
 
-import io.s4.collector.EventWrapper;
 import io.s4.dispatcher.partitioner.CompoundKeyInfo;
 import io.s4.dispatcher.partitioner.KeyInfo;
 import io.s4.dispatcher.partitioner.KeyInfo.KeyPathElement;
@@ -23,16 +22,14 @@ import io.s4.dispatcher.partitioner.KeyInfo.KeyPathElementIndex;
 import io.s4.dispatcher.partitioner.KeyInfo.KeyPathElementName;
 import io.s4.persist.Persister;
 import io.s4.schema.Schema;
-import io.s4.schema.SchemaContainer;
 import io.s4.schema.Schema.Property;
-import io.s4.util.DrivenClock;
+import io.s4.schema.SchemaContainer;
+import io.s4.util.clock.Clock;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
@@ -62,7 +59,7 @@ public abstract class AbstractPE implements ProcessingElement {
         }
     }
 
-    private DrivenClock drivenClock = new DrivenClock();
+    private Clock s4Clock;
     private int outputFrequency = 1;
     private FrequencyType outputFrequencyType = FrequencyType.EVENTCOUNT;
     private int outputFrequencyOffset = 0;
@@ -72,13 +69,14 @@ public abstract class AbstractPE implements ProcessingElement {
     private List<EventAdvice> eventAdviceList = new ArrayList<EventAdvice>();
     private List<Object> keyValue;
     private List<Object> keyRecord;
+    private String keyValueString;
     private String streamName;
     private boolean saveKeyRecord = false;
     private int outputsBeforePause = -1;
     private long pauseTimeInMillis;
     private boolean logPauses = false;
-    private Map<String, String> clockDriverFields;
-
+    private String initMethod = null;
+    
     public void setSaveKeyRecord(boolean saveKeyRecord) {
         this.saveKeyRecord = saveKeyRecord;
     }
@@ -95,12 +93,28 @@ public abstract class AbstractPE implements ProcessingElement {
         this.logPauses = logPauses;
     }
 
-    public void setClockDriverFields(String[] clockDriverFieldsArray) {
-        clockDriverFields = new HashMap<String, String>();
-        for (String clockDriverFieldInfo : clockDriverFieldsArray) {
-            StringTokenizer st = new StringTokenizer(clockDriverFieldInfo);
-            clockDriverFields.put(st.nextToken(), st.nextToken());
+    public void setS4Clock(Clock s4Clock) {
+        synchronized (this) {
+            this.s4Clock = s4Clock;
+            this.notify();
         }
+    }
+
+    /**
+     * The name of a method to be used as an initializer.  The method will be
+     * called after the object is cloned from the prototype PE.
+     */
+    public void setInitMethod(String initMethod)
+    {
+       this.initMethod = initMethod;
+    }
+    
+    public String getInitMethod() {
+       return this.initMethod;
+    }
+    
+    public Clock getS4Clock() {
+        return s4Clock;
     }
 
     private OverloadDispatcher overloadDispatcher;
@@ -121,35 +135,17 @@ public abstract class AbstractPE implements ProcessingElement {
      * {@link ProcessingElement} interface. You should not override this method.
      * Instead, you need to implement the <code>processEvent</code> method.
      **/
-    public void execute(String streamName, CompoundKeyInfo compoundKeyInfo, Object event) {
+    public void execute(String streamName, CompoundKeyInfo compoundKeyInfo,
+                        Object event) {
         // if this is the first time through, get the key for this PE
         if (keyValue == null || saveKeyRecord) {
             setKeyValue(event, compoundKeyInfo);
+
+            if (compoundKeyInfo != null)
+                keyValueString = compoundKeyInfo.getCompoundValue();
         }
 
         this.streamName = streamName;
-
-        if (clockDriverFields != null) {
-            Schema schema = schemaContainer.getSchema(event.getClass());
-            String fieldName = clockDriverFields.get(getStreamName());
-            long eventTime = -1;
-            if (fieldName != null) {
-                Property property = schema.getProperties().get(fieldName);
-                if (property != null
-                        && (property.getType().equals(Long.TYPE) || property.getType()
-                                                                            .equals(Long.class))) {
-                    try {
-                        eventTime = (Long) property.getGetterMethod()
-                                                   .invoke(event);
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            }
-
-            // update the clock
-            drivenClock.tick(eventTime);
-        }
 
         overloadDispatcher.dispatch(this, event);
 
@@ -173,11 +169,7 @@ public abstract class AbstractPE implements ProcessingElement {
     }
 
     public long getCurrentTime() {
-        if (clockDriverFields != null) {
-            return drivenClock.getCurrentTime();
-        } else {
-            return (System.currentTimeMillis());
-        }
+        return s4Clock.getCurrentTime();
     }
 
     /**
@@ -195,6 +187,10 @@ public abstract class AbstractPE implements ProcessingElement {
 
     public List<Object> getKeyRecord() {
         return keyRecord;
+    }
+
+    public String getKeyValueString() {
+        return keyValueString;
     }
 
     public String getStreamName() {
@@ -376,7 +372,8 @@ public abstract class AbstractPE implements ProcessingElement {
      */
     public Object clone() {
         try {
-            return super.clone();
+            Object clone = super.clone();
+            return clone;
         } catch (CloneNotSupportedException e) {
             throw new RuntimeException(e);
         }
@@ -414,6 +411,14 @@ public abstract class AbstractPE implements ProcessingElement {
 
     class OutputInvoker implements Runnable {
         public void run() {
+            synchronized (AbstractPE.this) {
+                while (s4Clock == null) {
+                    try {
+                        AbstractPE.this.wait();
+                    } catch (InterruptedException ie) {
+                    }
+                }
+            }
             int outputCount = 0;
             long frequencyInMillis = outputFrequency * 1000;
 
@@ -422,23 +427,8 @@ public abstract class AbstractPE implements ProcessingElement {
                 long currentBoundary = (currentTime / frequencyInMillis)
                         * frequencyInMillis;
                 long nextBoundary = currentBoundary + frequencyInMillis;
-
-                if (clockDriverFields != null) {
-                    currentTime = drivenClock.waitForTime(nextBoundary
-                            + (outputFrequencyOffset * 1000));
-                } else {
-                    long interval = (nextBoundary - getCurrentTime())
-                            + (outputFrequencyOffset * 1000);
-                    if (interval > 0) {
-                        try {
-                            Thread.sleep(interval);
-                        } catch (InterruptedException ie) {
-                            Thread.currentThread().interrupt();
-                        }
-                    }
-                    currentTime = getCurrentTime();
-                }
-
+                currentTime = s4Clock.waitForTime(nextBoundary
+                        + (outputFrequencyOffset * 1000));
                 if (lookupTable != null) {
                     Set peKeys = lookupTable.keySet();
                     for (Iterator it = peKeys.iterator(); it.hasNext();) {

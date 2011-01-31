@@ -4,10 +4,40 @@
   <groupId>io.s4</groupId>
   <artifactId>s4_core</artifactId>
   <packaging>jar</packaging>
-  <version>0.2.1.0</version>
+  <version>0.3.0.0</version>
   <name>s4_core</name>
   <url>http://maven.apache.org</url>
+  <repositories>
+    <repository>
+      <url>http://repo1.maven.org/maven2</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <id>central</id>
+      <name>Maven Repository Switchboard</name>
+    </repository>
+    <repository>
+      <id>gson</id>
+      <url>http://google-gson.googlecode.com/svn/mavenrepo</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+    </repository>
+  </repositories>
   <dependencies>
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>1.6</version>
+    </dependency>
+    <dependency>
+      <groupId>net.sf.flexjson</groupId>
+      <artifactId>flexjson</artifactId>
+      <version>2.1</version>
+    </dependency>
     <dependency>
       <groupId>org.apache.bcel</groupId>
       <artifactId>bcel</artifactId>
@@ -107,10 +137,10 @@
       <version>1.0.1</version>
     </dependency>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
-      <scope>test</scope>
+       <groupId>junit</groupId>
+       <artifactId>junit</artifactId>
+       <version>4.4</version>
+       <scope>test</scope>
     </dependency>
   </dependencies>
   <build>

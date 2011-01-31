@@ -15,14 +15,11 @@
  */
 package io.s4.processor;
 
-import io.s4.collector.Event;
-import io.s4.collector.EventRecord;
-import io.s4.dispatcher.Dispatcher;
+import io.s4.dispatcher.EventDispatcher;
 import io.s4.logger.Monitor;
 import io.s4.schema.Schema;
-import io.s4.schema.SchemaContainer;
 import io.s4.schema.Schema.Property;
-import io.s4.util.MetricsName;
+import io.s4.schema.SchemaContainer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,13 +29,11 @@ import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 
-import static io.s4.util.MetricsName.*;
-
 public class JoinPE extends AbstractPE {
     private static Logger logger = Logger.getLogger(JoinPE.class);
     private Map<String, List<String>> eventFields = new HashMap<String, List<String>>();
     private Map<String, Object> eventsToJoin;
-    private Dispatcher dispatcher;
+    private EventDispatcher dispatcher;
     private Monitor monitor;
     private String id = "JoinPE";
     private String outputStreamName;
@@ -53,7 +48,7 @@ public class JoinPE extends AbstractPE {
         this.id = id;
     }
 
-    public void setDispatcher(Dispatcher dispatcher) {
+    public void setDispatcher(EventDispatcher dispatcher) {
         this.dispatcher = dispatcher;
     }
 
@@ -169,7 +164,8 @@ public class JoinPE extends AbstractPE {
         }
     }
 
-    private void copyField(String propertyName, Schema sourceSchema, Schema targetSchema, Object source, Object target) {
+    private void copyField(String propertyName, Schema sourceSchema,
+                           Schema targetSchema, Object source, Object target) {
         Property sourceProperty = sourceSchema.getProperties()
                                               .get(propertyName);
         Property targetProperty = targetSchema.getProperties()

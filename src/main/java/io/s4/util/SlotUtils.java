@@ -15,7 +15,6 @@
  */
 package io.s4.util;
 
-import java.util.Date;
 
 public class SlotUtils {
 

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans              http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
+  <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    <property name="location">
+      <value>classpath:adapter.properties</value>
+    </property>
+    <property name="ignoreUnresolvablePlaceholders" value="true"/>
+  </bean> 
+  
+  <bean id="commLayerEmitter" class="io.s4.emitter.CommLayerEmitter" init-method="init">
+    <property name="serDeser" ref="serDeser"/>
+    <property name="appName" value="${appName}"/>
+    <property name="listenerAppName" value="${listenerAppName}"/>
+    <property name="listener" ref="rawListener"/>
+    <property name="monitor" ref="monitor"/>
+  </bean>
+
+  <bean id="serDeser" class="io.s4.serialize.KryoSerDeser"/>
+
+  <bean id="rawListener" class="io.s4.listener.CommLayerListener" init-method="init">
+    <property name="serDeser" ref="serDeser"/>
+    <property name="clusterManagerAddress" value="${zk_address}"/>
+    <!-- <property name="clusterType" value="ADAPTER"/> -->
+    <property name="appName" value="${appName}"/>
+    <property name="maxQueueSize" value="${listener_max_queue_size}"/>
+    <property name="monitor" ref="monitor"/>
+  </bean>
+
+  <bean id="eventListener" class="io.s4.collector.EventListener" init-method="init">
+    <property name="rawListener" ref="rawListener"/>
+    <property name="monitor" ref="monitor"/>
+  </bean>
+
+  <bean id="monitor" class="io.s4.logger.Log4jMonitor" lazy-init="true" init-method="init">
+    <property name="flushInterval" value="30"/>
+    <property name="loggerName" value="monitor"/>
+  </bean>
+
+  <bean id="dummyPartitioner" class="io.s4.dispatcher.partitioner.DummyPartitioner"/>
+
+  <bean id="hasher" class="io.s4.dispatcher.partitioner.DefaultHasher"/>
+  
+  <bean id="genericPartitioner" class="io.s4.dispatcher.partitioner.DefaultPartitioner">
+    <property name="hasher" ref="hasher"/>
+    <property name="debug" value="false"/>
+  </bean>
+
+
+  <bean id="dispatcher" class="io.s4.dispatcher.Dispatcher" init-method="init">
+    <property name="partitioners">
+      <list>
+        <ref bean="genericPartitioner"/>
+      </list>
+    </property>
+    <property name="eventEmitter" ref="commLayerEmitter"/>
+    <property name="loggerName" value="s4"/>
+  </bean>
+
+  <bean id="client_adapter" class="io.s4.client.Adapter"
+        init-method="init">
+    <property name="dispatcher" ref="dispatcher"/>
+    <property name="clusterEventListener" ref="eventListener"/>
+  </bean>
+</beans>

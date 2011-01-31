@@ -16,8 +16,8 @@
 package io.s4.processor;
 
 import io.s4.persist.ConMapPersister;
-import io.s4.persist.HashMapPersister;
 import io.s4.persist.Persister;
+import io.s4.util.clock.Clock;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -34,25 +34,18 @@ public class PrototypeWrapper {
         return prototype.getId();
     }
 
-    public PrototypeWrapper(ProcessingElement prototype) {
+    public PrototypeWrapper(ProcessingElement prototype, Clock s4Clock) {
         this.prototype = prototype;
-        // lookupTable = new HashMapPersister();
-        lookupTable = new ConMapPersister();
+        lookupTable = new ConMapPersister(s4Clock);
         System.out.println("Using ConMapPersister ..");
         // this bit of reflection is not a performance issue because it is only
         // invoked at configuration time
         try {
-            // lookupTable.setSelfClean(true);
-            // lookupTable.init();
-            Method method;
-            method = lookupTable.getClass().getMethod("setSelfClean",
-                                                      boolean.class);
-            method.invoke(lookupTable, true);
-            method = lookupTable.getClass().getMethod("init");
-            method.invoke(lookupTable);
+            ((ConMapPersister) lookupTable).setSelfClean(true);
+            ((ConMapPersister) lookupTable).init();
             // set the persister in prototype
-            method = prototype.getClass().getMethod("setLookupTable",
-                                                    Persister.class);
+            Method method = prototype.getClass().getMethod("setLookupTable",
+                                                           Persister.class);
             method.invoke(prototype, lookupTable);
         } catch (NoSuchMethodException e) {
             // this is expected
@@ -63,15 +56,53 @@ public class PrototypeWrapper {
         }
     }
 
+    /**
+     * Find PE corresponding to keyValue. If no such PE exists, then a new one
+     * is created by cloning the prototype and this is returned. As a
+     * side-effect, the last update time for the PE in the lookup table is
+     * modified.
+     * 
+     * @param keyValue
+     *            key value
+     * @return PE corresponding to keyValue.
+     */
     public ProcessingElement getPE(String keyValue) {
         ProcessingElement pe = null;
         try {
             pe = (ProcessingElement) lookupTable.get(keyValue);
             if (pe == null) {
                 pe = (ProcessingElement) prototype.clone();
+                //invoke the initialization method if it has been specified
+                if (pe.getInitMethod() != null) {
+                   Method initMethod = pe.getClass().getMethod(pe.getInitMethod(), new Class[0]);
+                   initMethod.invoke(pe, (new Object[0]));
+                }
+
             }
             // update the last update time on the entry
             lookupTable.set(keyValue, pe, prototype.getTtl());
+
+        } catch (Exception e) {
+            logger.error("exception when looking up pe for key:" + keyValue, e);
+        }
+
+        return pe;
+    }
+
+    /**
+     * Find PE corresponding to keyValue. If no such PE exists, then null is
+     * returned. Note: the last update time is not modified in the lookup table.
+     * 
+     * @param keyValue
+     *            key value
+     * @return PE corresponding to keyValue, if such a PE exists. Null
+     *         otherwise.
+     */
+    public ProcessingElement lookupPE(String keyValue) {
+        ProcessingElement pe = null;
+
+        try {
+            pe = (ProcessingElement) lookupTable.get(keyValue);
 
         } catch (Exception e) {
             logger.error("exception when looking up pe for key:" + keyValue, e);

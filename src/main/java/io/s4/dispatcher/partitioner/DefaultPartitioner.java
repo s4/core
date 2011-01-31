@@ -16,18 +16,18 @@
 package io.s4.dispatcher.partitioner;
 
 import io.s4.schema.Schema;
-import io.s4.schema.SchemaContainer;
 import io.s4.schema.Schema.Property;
+import io.s4.schema.SchemaContainer;
 
-import java.util.HashMap;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 
-public class DefaultPartitioner implements Partitioner {
+public class DefaultPartitioner implements Partitioner, VariableKeyPartitioner {
     private List<List<String>> keyNameTuple = new ArrayList<List<String>>();
     private boolean debug = false;
     private Hasher hasher;
@@ -67,12 +67,38 @@ public class DefaultPartitioner implements Partitioner {
 
     private SchemaContainer schemaContainer = new SchemaContainer();
 
-    public List<CompoundKeyInfo> partition(String streamName, Object event, int partitionCount) {
+    public List<CompoundKeyInfo> partition(String streamName, Object event,
+                                           int partitionCount) {
+        return partition(streamName, keyNameTuple, event, partitionCount);
+    }
+
+    public List<CompoundKeyInfo> partition(String streamName,
+                                           List<List<String>> compoundKeyNames,
+                                           Object event, int partitionCount) {
 
         if (streamName != null && streamNameSet != null
                 && !streamNameSet.contains(streamName)) {
             return null;
         }
+
+        // Some event types that need special handling
+        if (event instanceof io.s4.message.Request) {
+            // construct key from request's target
+            io.s4.message.Request r = (io.s4.message.Request) event;
+            return r.partition(hasher, delimiter, partitionCount);
+
+        } else if (event instanceof io.s4.message.Response) {
+            // partition id is encoded in Response, so use it directly.
+            io.s4.message.Response r = (io.s4.message.Response) event;
+            return r.partition(partitionCount);
+
+        } else if (compoundKeyNames == null) {
+            // if compoundKeyNames is null, then assign to a random partition.
+            return partitionRandom(partitionCount);
+        }
+
+        // have to compute key value and
+        // partition based on hash of that value
 
         Schema schema = schemaContainer.getSchema(event.getClass());
 
@@ -84,8 +110,9 @@ public class DefaultPartitioner implements Partitioner {
 
         // fast path for single top-level key
         if (fastPath
-                || (keyNameTuple.size() == 1 && keyNameTuple.get(0).size() == 1)) {
-            String simpleKeyName = keyNameTuple.get(0).get(0);
+                || (compoundKeyNames.size() == 1 && compoundKeyNames.get(0)
+                                                                    .size() == 1)) {
+            String simpleKeyName = compoundKeyNames.get(0).get(0);
             if (debug) {
                 System.out.println("Using fast path!");
             }
@@ -131,7 +158,7 @@ public class DefaultPartitioner implements Partitioner {
         List<List<KeyInfo>> valueLists = new ArrayList<List<KeyInfo>>();
         int maxSize = 0;
 
-        for (List<String> simpleKeyPath : keyNameTuple) {
+        for (List<String> simpleKeyPath : compoundKeyNames) {
             List<KeyInfo> keyInfoList = new ArrayList<KeyInfo>();
             KeyInfo keyInfo = new KeyInfo();
             keyInfoList = getKeyValues(event,
@@ -187,6 +214,22 @@ public class DefaultPartitioner implements Partitioner {
         return partitionInfoList;
     }
 
+    // Assign to random partition
+    private List<CompoundKeyInfo> partitionRandom(int partitionCount) {
+        CompoundKeyInfo partitionInfo = new CompoundKeyInfo();
+
+        // choose a random int from [0, partitionCount-1]
+        int partitionId = (int) Math.min(partitionCount - 1,
+                                         Math.floor(Math.random()
+                                                 * partitionCount));
+
+        partitionInfo.setPartitionId(partitionId);
+        List<CompoundKeyInfo> partitionInfoList = new ArrayList<CompoundKeyInfo>();
+        partitionInfoList.add(partitionInfo);
+
+        return partitionInfoList;
+    }
+
     private void printKeyInfoList(List<KeyInfo> keyInfoList) {
         for (KeyInfo aKeyInfo : keyInfoList) {
             System.out.printf("Path: %s; full path %s; value %s\n",
@@ -196,7 +239,11 @@ public class DefaultPartitioner implements Partitioner {
         }
     }
 
-    private List<KeyInfo> getKeyValues(Object record, Schema schema, List<String> keyNameElements, int elementIndex, List<KeyInfo> keyInfoList, KeyInfo keyInfo) {
+    private List<KeyInfo> getKeyValues(Object record, Schema schema,
+                                       List<String> keyNameElements,
+                                       int elementIndex,
+                                       List<KeyInfo> keyInfoList,
+                                       KeyInfo keyInfo) {
         String keyElement = keyNameElements.get(elementIndex);
         Property property = schema.getProperties().get(keyElement);
         if (property == null) {

@@ -15,8 +15,9 @@
  */
 package io.s4.listener;
 
-public interface EventListener {
-    void addHandler(EventHandler handler);
+public interface EventListener extends EventProducer {
 
-    boolean removeHandler(EventHandler handler);
+    int getId();
+
+    String getAppName();
 }

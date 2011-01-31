@@ -17,7 +17,6 @@ package io.s4.dispatcher.partitioner;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class DummyPartitioner implements Partitioner {
 

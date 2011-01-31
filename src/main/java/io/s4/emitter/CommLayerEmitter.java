@@ -15,9 +15,17 @@
  */
 package io.s4.emitter;
 
+import static io.s4.util.MetricsName.S4_CORE_METRICS;
+import static io.s4.util.MetricsName.S4_EVENT_METRICS;
+import static io.s4.util.MetricsName.low_level_emitter_msg_out_ct;
+import static io.s4.util.MetricsName.low_level_emitter_out_err_ct;
+import static io.s4.util.MetricsName.low_level_emitter_qsz;
 import io.s4.collector.EventWrapper;
+import io.s4.comm.core.SenderProcess;
+import io.s4.comm.core.Serializer;
 import io.s4.listener.CommLayerListener;
 import io.s4.logger.Monitor;
+import io.s4.message.Request;
 import io.s4.serialize.SerializerDeserializer;
 
 import java.util.HashMap;
@@ -27,21 +35,22 @@ import java.util.concurrent.LinkedBlockingDeque;
 
 import org.apache.log4j.Logger;
 
-import io.s4.comm.core.SenderProcess;
-import io.s4.comm.core.Serializer;
-
-import static io.s4.util.MetricsName.*;
-
 public class CommLayerEmitter implements EventEmitter, Runnable {
     private static Logger logger = Logger.getLogger(CommLayerEmitter.class);
+
+    // config for emitter is coupled with listener, if there is a non-null
+    // listener. This prevents 2 tasks from being checked out of the cluster
+    // config for the same node: one for the listener and another for the
+    // emitter.
     private CommLayerListener listener;
+
     private SenderProcess sender;
     private int nodeCount;
     private BlockingQueue<MessageHolder> messageQueue = new LinkedBlockingDeque<MessageHolder>();
     private String senderId;
     private String clusterManagerAddress;
     private String appName;
-    private String listenerAppName;
+    private String listenerAppName = null;
     private Monitor monitor;
     private SerializerDeserializer serDeser;
 
@@ -95,6 +104,12 @@ public class CommLayerEmitter implements EventEmitter, Runnable {
 
     @Override
     public void emit(int partitionId, EventWrapper eventWrapper) {
+
+        // Special handling required for Requests
+        if (eventWrapper.getEvent() instanceof Request) {
+            decorateRequest((Request) eventWrapper.getEvent());
+        }
+
         try {
             byte[] rawMessage = serDeser.serialize(eventWrapper);
             MessageHolder mh = new MessageHolder(partitionId, rawMessage);
@@ -112,6 +127,14 @@ public class CommLayerEmitter implements EventEmitter, Runnable {
                                          rte);
             throw rte;
         }
+    }
+
+    // Add partition id of sender
+    private void decorateRequest(Request r) {
+        Request.RInfo rinfo = r.getRInfo();
+
+        if (rinfo != null && listener != null)
+            rinfo.setPartition(listener.getId());
     }
 
     @Override
@@ -153,9 +176,14 @@ public class CommLayerEmitter implements EventEmitter, Runnable {
                 logger.info("Exception in CommLayerEmitter.run()", e);
             }
             logger.info("Creating sender process with " + listenerConfig);
+
+            String destinationAppName = (listenerAppName != null
+                    ? listenerAppName : listener.getAppName());
+
             sender = new SenderProcess(listener.getClusterManagerAddress(),
                                        listener.getAppName(),
-                                       listener.getAppName());
+                                       destinationAppName);
+
             sender.setSerializer(new PassThroughSerializer());
             sender.createSenderFromConfig(listenerConfig);
             nodeCount = sender.getNumOfPartitions();

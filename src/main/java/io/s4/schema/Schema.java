@@ -44,9 +44,9 @@ public class Schema {
     public Schema(Class clazz) {
         type = clazz;
         for (Method method : clazz.getMethods()) {
-            if (!method.getName().substring(0, 3).equals("set")
-                    || !method.getReturnType().equals(Void.TYPE)
-                    || method.getParameterTypes().length != 1) {
+            if (!method.getName().startsWith("set")
+		|| !method.getReturnType().equals(Void.TYPE)
+		|| method.getParameterTypes().length != 1) {
                 continue;
             }
 

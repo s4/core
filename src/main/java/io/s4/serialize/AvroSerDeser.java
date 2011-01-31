@@ -16,7 +16,6 @@
 package io.s4.serialize;
 
 import static io.s4.collector.Event.EVENT_NAME_KEY;
-
 import io.s4.schema.AvroSchemaManager;
 import io.s4.util.MiscConstants;
 

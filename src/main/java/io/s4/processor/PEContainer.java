@@ -15,33 +15,44 @@
  */
 package io.s4.processor;
 
-import io.s4.collector.Event;
+import static io.s4.util.MetricsName.S4_APP_METRICS;
+import static io.s4.util.MetricsName.S4_CORE_METRICS;
+import static io.s4.util.MetricsName.pecontainer_ev_dq_ct;
+import static io.s4.util.MetricsName.pecontainer_ev_err_ct;
+import static io.s4.util.MetricsName.pecontainer_ev_nq_ct;
+import static io.s4.util.MetricsName.pecontainer_ev_process_ct;
+import static io.s4.util.MetricsName.pecontainer_exec_elapse_time;
+import static io.s4.util.MetricsName.pecontainer_msg_drop_ct;
+import static io.s4.util.MetricsName.pecontainer_pe_ct;
+import static io.s4.util.MetricsName.pecontainer_qsz;
+import static io.s4.util.MetricsName.pecontainer_qsz_w;
 import io.s4.collector.EventWrapper;
 import io.s4.dispatcher.partitioner.CompoundKeyInfo;
 import io.s4.logger.Monitor;
-import io.s4.util.MetricsName;
+import io.s4.util.clock.Clock;
+import io.s4.util.clock.EventClock;
 
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.log4j.Logger;
 
-import static io.s4.util.MetricsName.*;
-
-public class PEContainer implements Runnable {
+public class PEContainer implements Runnable, AsynchronousEventProcessor {
     private static Logger logger = Logger.getLogger(PEContainer.class);
     BlockingQueue<EventWrapper> workQueue;
     private List<PrototypeWrapper> prototypeWrappers = new ArrayList<PrototypeWrapper>();
     private Monitor monitor;
+    private Clock s4Clock;
     private int maxQueueSize = 1000;
     private boolean trackByKey;
     private Map<String, Integer> countByEventType = Collections.synchronizedMap(new HashMap<String, Integer>());
+
+    private ControlEventProcessor controlEventProcessor = null;
 
     public void setMaxQueueSize(int maxQueueSize) {
         this.maxQueueSize = maxQueueSize;
@@ -51,13 +62,21 @@ public class PEContainer implements Runnable {
         this.monitor = monitor;
     }
 
+    public void setS4Clock(Clock s4Clock) {
+        this.s4Clock = s4Clock;
+    }
+
+    public Clock getS4Clock() {
+        return s4Clock;
+    }
+
     public void setTrackByKey(boolean trackByKey) {
         this.trackByKey = trackByKey;
     }
 
     public void addProcessor(ProcessingElement processor) {
         System.out.println("adding pe: " + processor);
-        PrototypeWrapper pw = new PrototypeWrapper(processor);
+        PrototypeWrapper pw = new PrototypeWrapper(processor, s4Clock);
         prototypeWrappers.add(pw);
         adviceLists.add(pw.advise());
     }
@@ -66,8 +85,12 @@ public class PEContainer implements Runnable {
         // prototypeWrappers = new ArrayList<PrototypeWrapper>();
 
         for (int i = 0; i < processors.length; i++) {
-            prototypeWrappers.add(new PrototypeWrapper(processors[i]));
+            addProcessor(processors[i]);
         }
+    }
+
+    public void setControlEventProcessor(ControlEventProcessor cep) {
+        this.controlEventProcessor = cep;
     }
 
     public PEContainer() {
@@ -87,6 +110,14 @@ public class PEContainer implements Runnable {
         t.start();
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * io.s4.processor.AsynchronousEventProcessor#queueWork(io.s4.collector.
+     * EventWrapper)
+     */
+    @Override
     public void queueWork(EventWrapper eventWrapper) {
         boolean isAddSucceed = false;
 
@@ -113,8 +144,33 @@ public class PEContainer implements Runnable {
 
     // This will always be called by a different thread than the one executing
     // run()
+    /*
+     * (non-Javadoc)
+     * 
+     * @see io.s4.processor.AsynchronousEventProcessor#getQueueSize()
+     */
+    @Override
     public int getQueueSize() {
         return workQueue.size();
+    }
+
+    /**
+     * An event is a control event if its stream name begins with the character
+     * '#'.
+     * 
+     * Control events are handled specially.
+     * 
+     * @param e
+     *            the event wrapper to test
+     * @return true if and only if e is a control message.
+     */
+    private boolean testControlEvent(EventWrapper e) {
+        String streamName = e.getStreamName();
+
+        if (streamName.length() > 0 && streamName.charAt(0) == '#')
+            return true;
+
+        return false;
     }
 
     public void run() {
@@ -123,7 +179,11 @@ public class PEContainer implements Runnable {
             EventWrapper eventWrapper = null;
             try {
                 eventWrapper = workQueue.take();
-
+                if (s4Clock instanceof EventClock) {
+                    EventClock eventClock = (EventClock) s4Clock;
+                    eventClock.update(eventWrapper);
+                    // To what time to update the clock
+                }
                 if (trackByKey) {
                     boolean foundOne = false;
                     for (CompoundKeyInfo compoundKeyInfo : eventWrapper.getCompoundKeys()) {
@@ -150,6 +210,9 @@ public class PEContainer implements Runnable {
                                       S4_CORE_METRICS.toString());
                 }
                 // printPlainPartitionInfoList(event.getCompoundKeyList());
+
+                boolean ctrlEvent = testControlEvent(eventWrapper);
+
                 // execute the PEs interested in this event
                 for (int i = 0; i < prototypeWrappers.size(); i++) {
                     if (logger.isDebugEnabled()) {
@@ -158,6 +221,19 @@ public class PEContainer implements Runnable {
                                 + prototypeWrappers.get(i).toString() + " - "
                                 + eventWrapper.getStreamName());
                     }
+
+                    // first check if this is a control message and handle it if
+                    // so.
+                    if (ctrlEvent) {
+                        if (controlEventProcessor != null) {
+                            controlEventProcessor.process(eventWrapper,
+                                                          prototypeWrappers.get(i));
+                        }
+
+                        continue;
+                    }
+
+                    // otherwise, continue processing event.
                     List<EventAdvice> adviceList = adviceLists.get(i);
                     for (EventAdvice eventAdvice : adviceList) {
                         if (eventAdvice.getEventName().equals("*")
@@ -186,6 +262,7 @@ public class PEContainer implements Runnable {
                         }
                     }
                 }
+
                 endTime = System.currentTimeMillis();
                 if (monitor != null) {
                     // TODO: need to be changed for more accurate calc
@@ -203,7 +280,8 @@ public class PEContainer implements Runnable {
         }
     }
 
-    private void invokePE(ProcessingElement pe, EventWrapper eventWrapper, CompoundKeyInfo compoundKeyInfo) {
+    private void invokePE(ProcessingElement pe, EventWrapper eventWrapper,
+                          CompoundKeyInfo compoundKeyInfo) {
         try {
             long startTime = System.currentTimeMillis();
             pe.execute(eventWrapper.getStreamName(),
@@ -249,7 +327,6 @@ public class PEContainer implements Runnable {
         }
         countObj++;
         countByEventType.put(key, countObj);
-
     }
 
     class Watcher implements Runnable {

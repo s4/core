@@ -22,9 +22,9 @@ import io.s4.dispatcher.partitioner.KeyInfo.KeyPathElement;
 import io.s4.dispatcher.partitioner.KeyInfo.KeyPathElementIndex;
 import io.s4.dispatcher.partitioner.KeyInfo.KeyPathElementName;
 
-import java.util.Map;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class Event extends EventRecord {
     private String eventName;

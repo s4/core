@@ -15,7 +15,6 @@
  */
 package io.s4.dispatcher.transformer;
 
-import java.util.Map;
 
 public interface Transformer {
     public Object transform(Object event);
