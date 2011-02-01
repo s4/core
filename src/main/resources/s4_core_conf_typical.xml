@@ -44,8 +44,7 @@
     <property name="dispatcher" ref="ctrlDispatcherAdapter"/>
     <property name="streams">
       <list>
-        <value>@adapter</value>
-        <value>@client</value>
+        <value>@${adapter_app_name}</value>
       </list>
     </property>
   </bean>
@@ -54,8 +53,7 @@
     <property name="dispatcher" ref="ctrlDispatcherS4"/>
     <property name="streams">
       <list>
-        <value>@adapter</value>
-        <value>@client</value>
+        <value>@${adapter_app_name}</value>
       </list>
     </property>
   </bean>

@@ -19,6 +19,7 @@ import io.s4.collector.EventListener;
 import io.s4.collector.EventWrapper;
 import io.s4.dispatcher.EventDispatcher;
 import io.s4.listener.EventHandler;
+import io.s4.message.Request;
 import io.s4.processor.AsynchronousEventProcessor;
 import io.s4.util.S4Util;
 
@@ -177,16 +178,30 @@ public class Adapter {
 
                 Object event = eventWrapper.getEvent();
 
+                if (event instanceof Request)
+                    decorateRequest((Request) event);
+
                 dispatcher.dispatchEvent(stream, keys, event);
 
             } catch (Exception e) {
-                Logger.getLogger("adapter").info("Exception adapting event",
-                                                    e);
+                Logger.getLogger("adapter").info("Exception adapting event", e);
             }
         }
 
         private volatile int eventCount = 0;
         private volatile int rawEventCount = 0;
+
+        // set the return stream name to the adapter cluster name
+        private void decorateRequest(Request r) {
+            Request.RInfo rinfo = r.getRInfo();
+
+            if (rinfo instanceof Request.ClientRInfo) {
+                String cname = clusterEventListener.getRawListener()
+                                                   .getAppName();
+
+                ((Request.ClientRInfo) rinfo).setStream("@" + cname);
+            }
+        }
     }
 
     /**
