@@ -16,7 +16,7 @@
 package io.s4.client;
 
 import io.s4.client.ClientStub.Info;
-import io.s4.client.util.ByteArrayIOChannel;
+import io.s4.util.ByteArrayIOChannel;
 
 import java.io.IOException;
 import java.net.Socket;

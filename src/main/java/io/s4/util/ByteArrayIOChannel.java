@@ -13,7 +13,7 @@
  * language governing permissions and limitations under the
  * License. See accompanying LICENSE file. 
  */
-package io.s4.client.util;
+package io.s4.util;
 
 import io.s4.client.IOChannel;
 

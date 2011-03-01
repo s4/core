@@ -15,11 +15,11 @@
  */
 package io.s4.client;
 
-import io.s4.client.util.ByteArrayIOChannel;
 import io.s4.collector.EventWrapper;
 import io.s4.listener.EventHandler;
 import io.s4.message.Request;
 import io.s4.message.Response;
+import io.s4.util.ByteArrayIOChannel;
 
 import java.io.IOException;
 import java.net.ServerSocket;
