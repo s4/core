@@ -4,6 +4,12 @@
     <property name="location">
       <value>classpath:s4_core.properties</value>
     </property>
+    <property name="properties">
+      <props>
+        <prop key="kryoSerDeser.initialBufferSize">2048</prop>
+        <prop key="kryoSerDeser.maxBufferSize">262144</prop>
+      </props>
+    </property>
     <property name="ignoreUnresolvablePlaceholders" value="true"/>
   </bean> 
   
@@ -22,8 +28,10 @@
     <property name="monitor" ref="monitor"/>
   </bean>
 
-  <bean id="serDeser" class="io.s4.serialize.KryoSerDeser"/>
-
+  <bean id="serDeser" class="io.s4.serialize.KryoSerDeser">
+    <property name="initialBufferSize" value="${kryoSerDeser.initialBufferSize}"/>
+    <property name="maxBufferSize" value="${kryoSerDeser.maxBufferSize}"/>
+  </bean>
 
   <!--START: Dispatchers for control event processor.
 

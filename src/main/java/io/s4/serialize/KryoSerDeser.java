@@ -24,6 +24,17 @@ import com.esotericsoftware.kryo.serialize.SimpleSerializer;
 public class KryoSerDeser implements SerializerDeserializer {
 
     private Kryo kryo = new Kryo();
+    
+    private int initialBufferSize = 2048;
+    private int maxBufferSize = 256*1024;
+
+    public void setInitialBufferSize(int initialBufferSize) {
+        this.initialBufferSize = initialBufferSize;
+    }
+
+    public void setMaxBufferSize(int maxBufferSize) {
+        this.maxBufferSize = maxBufferSize;
+    }
 
     public KryoSerDeser() {
         kryo.setRegistrationOptional(true);
@@ -48,13 +59,13 @@ public class KryoSerDeser implements SerializerDeserializer {
 
     @Override
     public Object deserialize(byte[] rawMessage) {
-        ObjectBuffer buffer = new ObjectBuffer(kryo);
+        ObjectBuffer buffer = new ObjectBuffer(kryo, initialBufferSize, maxBufferSize);
         return buffer.readClassAndObject(rawMessage);
     }
 
     @Override
     public byte[] serialize(Object message) {
-        ObjectBuffer buffer = new ObjectBuffer(kryo);
+        ObjectBuffer buffer = new ObjectBuffer(kryo, initialBufferSize, maxBufferSize);
         return buffer.writeClassAndObject(message);
     }
 }
